@@ -13,16 +13,16 @@ public class FlyB extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 100) {
+        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
             if (user.generalCancel()
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L) {
                 return;
             }
 
-            double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
+            double deltaY = Math.abs(user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY());
 
-            if (deltaY < -0.08 && user.getMovementData().isLastClientGround()) {
-                alert(user, "DY -> " + deltaY + " CG -> " + user.getMovementData().isLastClientGround());
+            if (deltaY <= 0 && user.getMovementData().isLastClientGround() && !user.getMovementData().isOnGround()) {
+                alert(user, "DY -> " + deltaY + " LCG -> " + user.getMovementData().isLastClientGround());
             }
         }
     }

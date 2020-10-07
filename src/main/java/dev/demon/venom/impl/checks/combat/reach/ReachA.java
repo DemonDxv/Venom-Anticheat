@@ -16,22 +16,28 @@ import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 @CheckInfo(name = "Reach", type = "A")
 public class ReachA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+       /* if (e instanceof FlyingEvent) {
             PlayerLocation location = new PlayerLocation(((FlyingEvent) e).getX(), ((FlyingEvent) e).getY(), ((FlyingEvent) e).getZ(), System.currentTimeMillis());
 
             user.getMovementData().setLocation(location);
-            user.getPreviousLocations().add(location);
 
-            if (user.getPreviousLocations().size() >= 1000) {
-                user.getPreviousLocations().clear();
+
+            if (user.getMovementData().getLocation() != null) {
+                user.getMovementData().setPreviousLocation(user.getMovementData().getLocation());
+                user.getPreviousLocations().add(location);
             }
-        }
+
+
+            user.getPreviousLocs().add(new PlayerLocation(((FlyingEvent) e).getX(), ((FlyingEvent) e).getY(), ((FlyingEvent) e).getZ(), ((FlyingEvent) e).getYaw(), ((FlyingEvent) e).getPitch()));
+        }*/
 
 
         if (e instanceof UseEntityEvent) {
@@ -40,18 +46,20 @@ public class ReachA extends Check {
 
                 if (targetUser != null && user != null) {
                     PlayerLocation location = user.getMovementData().getLocation();
+                    PlayerLocation previousLocation = user.getMovementData().getPreviousLocation();
 
-                    List<PlayerLocation> pastLocation = new ArrayList<>(targetUser.getMovementData().getLocation().getEstimatedLocation(targetUser, targetUser.getLagProcessor().getCurrentPing(), 200));
 
-                    float range = (float) pastLocation.stream().mapToDouble(vec -> vec.getDistanceSquared(location)).min().orElse(0.0);
+                    double recalc = targetUser.getPreviousLocs().stream().mapToDouble(vec -> vec.getEstimatedLocation(user, user.getLagProcessor().getCurrentPing(), 200).stream().mapToDouble(vec2 -> vec2.getDistanceSquared(location, previousLocation)).min().orElse(0.0)).min().orElse(0.0);
 
-                    range -= (user.getMovementData().getDeltaXZ() + 0.1300001F + 0.026 + MathUtil.moveFlying(user, user.getMovementData().getTo(), user.getMovementData().isLastClientGround()));
+                    double range = targetUser.getPreviousLocs().stream().mapToDouble(vec -> vec.getDistanceSquared(location, previousLocation)).min().orElse(0.0);
+
+                    range -= recalc;
 
                     if (range > 7 || user.getCombatData().cancelTicks > 0) {
                         return;
                     }
 
-                    if (range > 3.0) {
+                    if (range > 3.0 && user.getCombatData().getTransactionHits() <= 1) {
                         alert(user, "R -> " + range);
                     }
                 }

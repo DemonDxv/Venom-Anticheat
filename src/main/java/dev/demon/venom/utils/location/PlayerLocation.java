@@ -27,14 +27,14 @@ public class PlayerLocation {
 
     public PlayerLocation(double x, double y, double z, float yaw, float pitch) {
         this.x = x;
-        minX = x - 0.3;
-        maxX = x + 0.3;
+        minX = x - 0.41;
+        maxX = x + 0.41;
 
         this.y = y;
 
         this.z = z;
-        minZ = z - 0.3;
-        maxZ = z + 0.3;
+        minZ = z - 0.41;
+        maxZ = z + 0.41;
 
         this.yaw = yaw;
         this.pitch = pitch;
@@ -66,9 +66,9 @@ public class PlayerLocation {
     }
 
 
-    public double getDistanceSquared(PlayerLocation location) {
-        double dx = Math.min(Math.abs(location.x - minX), Math.abs(location.x - maxX));
-        double dz = Math.min(Math.abs(location.z - minZ), Math.abs(location.z - maxZ));
+    public double getDistanceSquared(PlayerLocation location, PlayerLocation lastLocation) {
+        double dx = Math.min(Math.abs(location.x - minX), Math.abs(lastLocation.x - maxX));
+        double dz = Math.min(Math.abs(location.z - minZ), Math.abs(lastLocation.z - maxZ));
 
         return Math.sqrt(Math.pow(dx, 2.0) + Math.pow(dz, 2.0));
     }

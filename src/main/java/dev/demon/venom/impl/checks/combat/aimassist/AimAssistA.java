@@ -17,7 +17,11 @@ public class AimAssistA extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingEvent) {
 
-            if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() > 2000L)) violation = 0;
+            if (user.isUsingNewOptifine()) {
+                return;
+            }
+
+            if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() > 2000L) || user.isUsingNewOptifine()) violation = 0;
 
             double diff = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
 

@@ -1,5 +1,6 @@
 package dev.demon.venom.utils.location;
 
+import dev.demon.venom.utils.math.MathUtil;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.Getter;
@@ -101,6 +102,10 @@ public class CustomLocation {
 
     public Location toLocation(World world) {
         return new Location(world, x, y, z, yaw, pitch);
+    }
+
+    public float getYawClamped() {
+        return MathUtil.yawTo180F(yaw);
     }
 
     public Vector toVector() {

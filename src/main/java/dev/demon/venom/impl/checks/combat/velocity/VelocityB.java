@@ -9,6 +9,7 @@ import dev.demon.venom.impl.events.FlyingEvent;
 import dev.demon.venom.impl.events.UseEntityEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
+import org.bukkit.Bukkit;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,10 +22,11 @@ public class VelocityB extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
 
-            if (user.getBlockData().wallTicks > 0) {
-                violation = 0;
+            if (user.getBlockData().wallTicks > 0
+                    || user.getBlockData().fenceTicks > 0
+                    || user.getMovementData().isCollidesHorizontally()) {
                 return;
             }
 
@@ -123,20 +125,15 @@ public class VelocityB extends Check {
                 prediction -= Math.hypot(motionXAdd, motionZAdd);
             }
 
+            double horizontal = (deltaXZ / (prediction - lastDeltaXZ)) - 0.13000001F - 0.026F;
+
 
             if (user.getVelocityData().getVelocityTicks() == 2) {
-                if (((deltaXZ + lastDeltaXZ) / prediction) <= 0.995) {
-                    alert(user, "" + ((deltaXZ + lastDeltaXZ) / prediction));
+                if (horizontal < 1 && horizontal >= 0) {
+                    alert(user, "HV -> " + horizontal + "%");
                 }
             }
-            lastDeltaXZ = deltaXZ;
-        }
-
-        if (e instanceof UseEntityEvent) {
-            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK || user.getMovementData().isLastSprint()) {
-                user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6F);
-                user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6F);
-            }
+            lastDeltaXZ = prediction;
         }
     }
 }

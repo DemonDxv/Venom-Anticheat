@@ -21,6 +21,7 @@ public class MoveData {
     private long lastBlockJump, lastPos, lastBlockFall, lastCollidedGround, lastFullBlockMoved, LastJunpPadUpdate, lastJumpPadSet, breakingOrPlacingTime, lastUnknownTeleport, lastTeleport, lastFullTeleport, lastExplode, lastEnderpearl, lastFallDamage, lastNearBoat;
     private double prediction, deltaXZ, lastGroundPrediction, lastFallJumpPrediction, groundYPredict, walkSpeed, movementSpeed;
     public PlayerLocation location2, location, previousLocation, previousPreviousLocation;
+    private float pitchDelta, yawDelta, yawDeltaClamped;
 
     public MoveData(User user) {
         this.user = user;

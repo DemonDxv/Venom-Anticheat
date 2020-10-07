@@ -5,6 +5,7 @@ import dev.demon.venom.Venom;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.connection.HTTPUtil;
+import dev.demon.venom.utils.math.MCSmoothing;
 import dev.demon.venom.utils.math.MathUtil;
 
 import dev.demon.venom.api.check.Check;
@@ -55,12 +56,15 @@ public class User {
     private LagProcessor lagProcessor;
     private VelocityProcessor velocityProcessor;
     private PredictionProcessor predictionProcessor;
+    private OptifineProcessor optifineProcessor;
+    private OldProcessors oldProcessors;
 
 
     private ScheduledExecutorService executorService;
 
     private Deque<PlayerLocation> previousLocations = new LinkedList<>(), previousLocations2 = new LinkedList<>();
-    //public Queue<PlayerLocation> previousLocations = EvictingQueue.create(10);
+    public Queue<PlayerLocation> previousLocs = EvictingQueue.create(8);
+
 
     private ProtocolVersion protocolVersion;
 
@@ -75,6 +79,14 @@ public class User {
     private WeakHashMap<Check, Integer> flaggedChecks = new WeakHashMap<>();
 
     public final List<Check> checks;
+
+    //Optifine things
+    public long lastEventCall, lastBan, lastOptifine, lastOptifineREE, lastRetardOpitfineSpam, lastAimAssistACE;
+    public int optifineSmoothing2, lastClientSmoothingValue, optifineSmoothing, LastSmoothingCounter, smoothingCounter, optifineSmoothSens, optifinePitchSmooth, optifineSameCount, optifineConstantVL2, optifineConstantVL, optifineSmoothingFix, killauraAYawReset, killauraAPitchReset, aimAssistsACount, optifineSmoothingTicks;
+    public MCSmoothing aimWSmooth = new MCSmoothing(), newPitchSmoothing = new MCSmoothing(), newYawSmoothing = new MCSmoothing(), yaw = new MCSmoothing(), pitch = new MCSmoothing(), smooth = new MCSmoothing();
+    public double lastSmoothingRot2, lastSmoothingRot, lastPitchDelta, lastSmoothPitch1, lastOptifinePitchSmoothidfklol;
+    public float lastYawDelta, lastSmoothYaw;
+    public boolean cineCamera, usingNewOptifine, usingNewOptifinePitch;
 
 
 
@@ -105,7 +117,18 @@ public class User {
 
         new BukkitRunnable() {
             public void run() {
+                PlayerLocation location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), movementData.getTo().getYaw(), movementData.getTo().getPitch());
 
+                getMovementData().setLocation(location);
+
+
+                if (getMovementData().getLocation() != null) {
+                    getMovementData().setPreviousLocation(getMovementData().getLocation());
+                    getPreviousLocations().add(location);
+                }
+
+
+                getPreviousLocs().add(new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), movementData.getTo().getYaw(), movementData.getTo().getPitch()));
             }
         }.runTaskTimer(Venom.getInstance(), 0L, 1L);
 
@@ -129,6 +152,10 @@ public class User {
         velocityProcessor.setUser(this);
 
         predictionProcessor = new PredictionProcessor(this);
+
+        optifineProcessor = new OptifineProcessor(this);
+
+        oldProcessors = new OldProcessors(this);
 
     }
     public void update(BlockAssesement blockAssesement) {

@@ -28,7 +28,7 @@ public class AimAssistB extends Check {
             double pitchDelta = Math.abs(to.getPitch() - from.getPitch());
             double yawDelta = Math.abs(to.getYaw() - from.getYaw());
 
-            if (misses >= 100 && yawDelta > 3 && pitchDelta > 0.5) {
+            if (misses >= 100 && yawDelta > 3 && pitchDelta > 3) {
                 if (hits > 75) {
                     if (violation++ > 1) {
                         alert(user, "H -> " + hits + " M -> " + misses);

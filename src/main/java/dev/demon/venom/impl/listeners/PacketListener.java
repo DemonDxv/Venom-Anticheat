@@ -31,6 +31,8 @@ public class PacketListener implements AnticheatListener {
 
             user.getVelocityProcessor().update(e.getPacket(), e.getType());
 
+            user.getOptifineProcessor().onPacket(e.getPacket(), e.getType(), user);
+
             //user.getOtherProcessor().update(e.getPacket(), e.getType());
             //user.getPredictionProcessor().update(e);
 

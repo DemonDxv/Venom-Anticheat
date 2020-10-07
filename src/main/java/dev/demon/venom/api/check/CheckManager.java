@@ -30,6 +30,8 @@ public class CheckManager {
             //Combat
             AimAssistA.class,
             AimAssistB.class,
+            AimAssistC.class,
+            AimAssistD.class,
 
             AutoClickerA.class,
             AutoClickerB.class,
@@ -42,17 +44,22 @@ public class CheckManager {
 
             KillauraA.class,
             KillauraB.class,
+            KillauraC.class,
+            KillauraD.class,
 
             ReachA.class,
+            ReachB.class,
 
             VelocityA.class,
             VelocityB.class,
+            VelocityC.class,
+            VelocityD.class,
+            VelocityE.class,
 
             //Movement
-          //  SpeedA.class,
             SpeedA.class,
 
-         //   FlyA.class,
+            FlyA.class,
             FlyB.class,
 
             //Other

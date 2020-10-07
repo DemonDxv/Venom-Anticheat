@@ -2,7 +2,10 @@ package dev.demon.venom.utils.processor;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
+import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInTransactionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
+import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.user.User;
 
 import lombok.Setter;
@@ -25,6 +28,9 @@ public class CombatProcessor {
                     if (wrappedInUseEntityPacket.getEntity() instanceof Player) {
                         User attackedUser = Venom.getInstance().getUserManager().getUser(wrappedInUseEntityPacket.getEntity().getUniqueId());
                         if (attackedUser != null) user.getCombatData().setTargetUser(attackedUser);
+
+                        WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (short) 69, false);
+                        TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
                     }
 
                     if (user.getCombatData().getLastEntityAttacked() != null) {
@@ -40,6 +46,14 @@ public class CombatProcessor {
                         user.getCombatData().setLastEntityAttacked(wrappedInUseEntityPacket.getEntity());
                         user.getCombatData().setLastUseEntityPacket(System.currentTimeMillis());
                     }
+                }
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
+                WrappedInTransactionPacket transactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
+
+                if (transactionPacket.getAction() == 69) {
+                    user.getCombatData().setTransactionHits(0);
                 }
             }
         }

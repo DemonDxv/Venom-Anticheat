@@ -125,14 +125,6 @@ public class Venom extends JavaPlugin {
 
         getLogger().info("Venom Anticheat has been Successfully Loaded.");
 
-        if (!User.keyActive) {
-            getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
-            getEventManager().callEvent(new ServerShutdownEvent());
-            Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
-            executorService.shutdownNow();
-            commandManager.getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
-        }
-
         super.onEnable();
     }
 

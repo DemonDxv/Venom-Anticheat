@@ -28,10 +28,11 @@ public class VelocityA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
 
-            if (user.getBlockData().wallTicks > 0) {
-                violation = 0;
+            if (user.getBlockData().wallTicks > 0
+                    || user.getBlockData().fenceTicks > 0
+                    || user.getMovementData().isCollidesHorizontally()) {
                 return;
             }
 
@@ -133,7 +134,7 @@ public class VelocityA extends Check {
 
             if (user.getVelocityData().getVelocityTicks() == 1) {
                 if ((deltaXZ / prediction) <= 0.995) {
-                    alert(user, "" + (deltaXZ / prediction));
+                    alert(user, "HV -> " + (deltaXZ / prediction) + "%");
                 }
             }
         }

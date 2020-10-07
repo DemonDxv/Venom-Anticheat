@@ -21,7 +21,7 @@ public class CombatData {
     private boolean breakingBlock, respawn;
     private User targetUser;
     private double lastVelocitySqr;
-    private int maxSamples, movements;
+    private int transactionHits, maxSamples, movements;
     protected final List<Integer> delays = new ArrayList<>(maxSamples);
 
     private User user;

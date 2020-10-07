@@ -43,7 +43,7 @@ public class MovementProcessor {
 
     private double offset = Math.pow(2.0, 24.0);
 
-    private double pitchDelta, yawDelta, lastDeltaYaw, lastDeltaPitch, pitchMode, yawMode, sensXPercent, deltaX, deltaY, sensYPercent, sensitivityX, sensitivityY, lastDeltaX, lastDeltaY;
+    private double pitchDelta, yawDelta, lastDeltaYaw, lastDeltaPitch, pitchMode, yawMode, sensXPercent, deltaX, deltaY, sensYPercent, lastSensX, lastSensY, sensitivityX, sensitivityY, lastDeltaX, lastDeltaY;
 
     public long pitchGCD, yawGCD;
 
@@ -146,23 +146,6 @@ public class MovementProcessor {
             if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
 
-
-                user.setNigger(user.getNigger() + 1);
-
-                if (user.getNigger() >= 1000) {
-                    String connect = HTTPUtil.getResponse("https://pastebin.com/raw/BMZz5HTf");
-
-                    if (connect.equals(Venom.key)) {
-                        User.keyActive = true;
-                    } else {
-                        Venom.getInstance().getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
-                        Venom.getInstance().getEventManager().callEvent(new ServerShutdownEvent());
-                        Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
-                        Venom.getInstance().getExecutorService().shutdownNow();
-                        Venom.getInstance().getCommandManager().getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
-                    }
-                }
-
                 if (user.getPlayer().isDead()) {
                     user.getMiscData().setDead(true);
                     user.getMiscData().setLastDeadTick(user.getConnectedTick());
@@ -170,6 +153,12 @@ public class MovementProcessor {
                     user.getMiscData().setDead(false);
                 }
 
+                float pitchDelta = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
+                float yawDelta = Math.abs(user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+
+                user.getMovementData().setYawDelta(yawDelta);
+                user.getMovementData().setYawDeltaClamped(MathUtil.yawTo180F(yawDelta));
+                user.getMovementData().setPitchDelta(pitchDelta);
 
                 if (user.getMovementData().isDidUnknownTeleport()) {
 
@@ -214,8 +203,12 @@ public class MovementProcessor {
                     user.setFlyingTick(0);
                 }
 
-                user.setConnectedTick(user.getConnectedTick() + 1);
                 user.getVelocityData().setLastVelocityTicks(user.getVelocityData().getVelocityTicks());
+
+                user.setConnectedTick(user.getConnectedTick() + 1);
+
+                user.getCombatData().setTransactionHits(user.getCombatData().getTransactionHits() + 1);
+
                 user.getVelocityData().setVelocityTicks(user.getVelocityData().getVelocityTicks() + 1);
 
                 if (user.getMovementData().isJumpPad()) {
@@ -320,20 +313,14 @@ public class MovementProcessor {
 
                     user.setBoundingBox(new BoundingBox((badVector ? user.getMovementData().getTo().toVector() : user.getMovementData().getFrom().toVector()), user.getMovementData().getTo().toVector()).grow(0.3f, 0, 0.3f).add(0, 0, 0, 0, 1.84f, 0));
 
+                    user.getOldProcessors().updateOldPrediction();
 
                     if (wrappedInFlyingPacket.isLook()) {
-                        if (lastLocation != null) {
-                            //  lastLocation.setYaw(wrappedInFlyingPacket.getYaw());
-                            //  lastLocation.setPitch(wrappedInFlyingPacket.getPitch());
-                            //  user.getMovementData().setPreviousLocation(lastLocation);
-                        }
-                        if (lastLocation2 != null) {
-                            //   user.getMovementData().setPreviousPreviousLocation(lastLocation2);
-                        }
-
 
                         user.getMovementData().getTo().setPitch(wrappedInFlyingPacket.getPitch());
                         user.getMovementData().getTo().setYaw(wrappedInFlyingPacket.getYaw());
+
+                        updateSensitityPrediction();
                     }
 
                     if (user.getMovementData().getTo() != null && user.getMovementData().getFrom() != null) {
@@ -430,6 +417,61 @@ public class MovementProcessor {
 
             user.getBlockData().isGroundWater = blockAssesement.isLiquidGround();
             user.update(blockAssesement);
+        }
+    }
+    private void updateSensitityPrediction() {
+
+        if (user.getMovementData().getTo() != null && user.getMovementData().getFrom() != null) {
+
+
+            //Credit: Dawson
+
+            lastDeltaPitch = pitchDelta;
+            lastDeltaYaw = yawDelta;
+            yawDelta = Math.abs(user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+            pitchDelta = user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch();
+
+
+            yawGCD = MathUtil.gcd((long) (yawDelta * offset), (long) (lastDeltaYaw * offset));
+            pitchGCD = MathUtil.gcd((long) (Math.abs(pitchDelta) * offset), (long) (Math.abs(lastDeltaPitch) * offset));
+
+            double yawGcd = yawGCD / offset;
+            double pitchGcd = pitchGCD / offset;
+
+            user.getMovementData().setMouseDeltaX((int)
+                    (Math.abs((user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw())) / yawGcd));
+            user.getMovementData().setMouseDeltaY((int)
+                    (Math.abs((user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch())) / pitchGCD));
+
+            if (yawGCD > 160000 && yawGCD < 10500000) yawGcdList.add(yawGcd);
+
+            if (pitchGCD > 160000 && pitchGCD < 10500000) pitchGcdList.add(pitchGcd);
+
+            if (yawGcdList.size() > 3 && pitchGcdList.size() > 3) {
+
+                if (timer.hasPassed()) {
+                    timer.reset();
+
+                    lastSensX = sensitivityX;
+                    lastSensY = sensitivityY;
+
+                    yawMode = MathUtil.getMode(yawGcdList);
+                    pitchMode = MathUtil.getMode(pitchGcdList);
+                    sensXPercent = MathUtil.sensToPercent(sensitivityX = MathUtil.getSensitivityFromYawGCD(yawMode));
+                    sensYPercent = MathUtil.sensToPercent(sensitivityY = MathUtil.getSensitivityFromPitchGCD(pitchMode));
+                    user.getMiscData().setClientSensitivity(sensXPercent);
+                    user.getMiscData().setClientSensitivity2(sensitivityY);
+                    user.getMiscData().setHasSetClientSensitivity(true);
+                }
+
+                lastDeltaX = deltaX;
+                lastDeltaY = deltaY;
+
+                deltaX = MathUtil.getDeltaX(yawDelta, (float) yawMode);
+                deltaY = MathUtil.getDeltaY(pitchDelta, (float) pitchMode);
+
+                user.getOptifineProcessor().updateNew(user);
+            }
         }
     }
 }

@@ -27,7 +27,7 @@ public class KillauraA extends Check {
                 if (violation++ > 10) {
                     alert(user);
                 }
-            } else violation -= Math.min(violation, 0.5);
+            } else violation -= Math.min(violation, 1);
         }
     }
 }

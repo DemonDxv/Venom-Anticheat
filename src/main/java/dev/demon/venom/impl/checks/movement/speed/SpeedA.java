@@ -21,7 +21,7 @@ public class SpeedA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 100) {
+        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
 
             if (user.generalCancel()) {
                 return;
@@ -41,7 +41,7 @@ public class SpeedA extends Check {
             }
 
             if (user.getVelocityData().getVelocityTicks() <= 20) {
-                prediction += user.getVelocityData().getHorizontalVelocityTrans();
+                prediction += user.getVelocityProcessor().getHorizontal();
             }
 
             if (user.getBlockData().liquidTicks > 0) {

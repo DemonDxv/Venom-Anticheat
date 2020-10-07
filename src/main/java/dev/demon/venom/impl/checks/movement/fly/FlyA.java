@@ -5,6 +5,7 @@ import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.FlyingEvent;
+import org.bukkit.Bukkit;
 
 
 @CheckInfo(name = "Fly", type = "A")
@@ -14,10 +15,14 @@ public class FlyA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 100) {
+        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
             double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
 
-            if (user.getMovementData().getVelocityTicks() <= 20) {
+            if (user.getVelocityData().getVelocityTicks() <= 20) {
+                return;
+            }
+
+            if (user.getBlockData().liquidTicks > 0 || user.getBlockData().climbableTicks > 0) {
                 return;
             }
 

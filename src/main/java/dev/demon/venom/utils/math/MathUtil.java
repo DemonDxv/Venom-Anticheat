@@ -56,16 +56,6 @@ public class MathUtil {
 
         String connect = HTTPUtil.getResponse("https://pastebin.com/raw/BMZz5HTf");
 
-        if (connect.equals(Venom.key)) {
-            User.keyActive = true;
-        } else {
-            Venom.getInstance().getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
-            Venom.getInstance().getEventManager().callEvent(new ServerShutdownEvent());
-            Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
-            Venom.getInstance().getExecutorService().shutdownNow();
-            Venom.getInstance().getCommandManager().getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
-        }
-
     }
 
     public static double hypot2(double... values) {
@@ -88,6 +78,87 @@ public class MathUtil {
             }
         }
         return 0;
+    }
+
+    public static float yawTo180F(float flub) {
+        if ((flub %= 360.0f) >= 180.0f) {
+            flub -= 360.0f;
+        }
+
+        if (flub < -180.0f) {
+            flub += 360.0f;
+        }
+        return flub;
+    }
+
+
+    public static double yawToF2(double yawDelta) {
+        return yawDelta / .15;
+    }
+
+    public static double pitchToF3(double pitchDelta) {
+        int b0 = pitchDelta >= 0 ? 1 : -1; //Checking for inverted mouse.
+        return pitchDelta / .15 / b0;
+    }
+
+    public static double getF1FromYaw(double gcd) {
+        double f = getFFromYaw(gcd);
+
+        return Math.pow(f, 3) * 8;
+    }
+
+    public static double getSensitivityFromPitchGCD(double gcd) {
+        double stepOne = pitchToF3(gcd) / 8;
+        double stepTwo = Math.cbrt(stepOne);
+        double stepThree = stepTwo - .2f;
+        return stepThree / .6f;
+    }
+
+    public static double getSensitivityFromYawGCD(double gcd) {
+        double stepOne = yawToF2(gcd) / 8;
+        double stepTwo = Math.cbrt(stepOne);
+        double stepThree = stepTwo - .2f;
+        return stepThree / .6f;
+    }
+
+    public static double getFFromYaw(double gcd) {
+        double sens = getSensitivityFromYawGCD(gcd);
+        return sens * .6f + .2;
+    }
+
+    public static double getFFromPitch(double gcd) {
+        double sens = getSensitivityFromPitchGCD(gcd);
+        return sens * .6f + .2;
+    }
+
+    public static double getF1FromPitch(double gcd) {
+        double f = getFFromPitch(gcd);
+
+        return (float) Math.pow(f, 3) * 8;
+    }
+
+    public static int getDeltaX(double yawDelta, double gcd) {
+        double f2 = yawToF2(yawDelta);
+
+        return MathUtil.floor(f2 / getF1FromYaw(gcd));
+    }
+
+    public static int getDeltaY(double pitchDelta, double gcd) {
+        double f3 = pitchToF3(pitchDelta);
+
+        return MathUtil.floor(f3 / getF1FromPitch(gcd));
+    }
+
+    public static int sensToPercent(double sensitivity) {
+        return (int) MathUtil.round(sensitivity / .5f * 100, 0);
+    }
+
+
+    public static float getAngleDelta(float one, float two) {
+        float delta = getDelta(one, two) % 360f;
+
+        if(delta > 180) delta = 360 - delta;
+        return delta;
     }
 
     public static BoundingBox getHitbox(LivingEntity entity, CustomLocation l, User user) {
