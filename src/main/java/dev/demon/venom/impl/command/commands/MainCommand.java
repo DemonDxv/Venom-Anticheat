@@ -29,10 +29,10 @@ public class MainCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender commandSender, String commandLabel, String[] args) {
-        if (commandLabel.equalsIgnoreCase("xan")) {
-            if (commandSender.isOp() || commandSender.hasPermission("xan.command")) {
+        if (commandLabel.equalsIgnoreCase("venom")) {
+            if (commandSender.isOp() || commandSender.hasPermission("venom.command")) {
                 if (args.length < 1) {
-                    commandSender.sendMessage(ChatColor.RED + "Xan" + ChatColor.GRAY + " - " + ChatColor.RED + Venom.getInstance().getDescription().getVersion());
+                    commandSender.sendMessage(ChatColor.RED + "Venom" + ChatColor.GRAY + " - " + ChatColor.RED + Venom.getInstance().getDescription().getVersion());
                     commandSender.sendMessage(line);
 
                     Player player = (Player) commandSender;

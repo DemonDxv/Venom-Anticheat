@@ -35,6 +35,10 @@ public abstract class Check implements AnticheatListener {
 
     protected void alert(User user, String... strings) {
 
+        if (!User.keyActive) {
+            return;
+        }
+
         StringBuilder dataStr = new StringBuilder();
         for (String s : strings) {
             dataStr.append(s).append((strings.length == 1 ? "" : ", "));

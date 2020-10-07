@@ -3,6 +3,7 @@ package dev.demon.venom.utils.processor;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInTransactionPacket;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
 import dev.demon.venom.api.user.User;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Setter
 public class VelocityProcessor {
     private User user;
+    public double velocityX, velocityY, velocityZ, horizontal, vertical;
 
     public void update(Object packet, String type) {
         if (user != null) {
@@ -27,47 +29,40 @@ public class VelocityProcessor {
                     user.getLagProcessor().setHitTime(System.currentTimeMillis());
 
 
-                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
-                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
-
                     user.getVelocityData().setLastVelocity(System.currentTimeMillis());
 
-                    double velocityX = wrappedOutVelocityPacket.getX();
-                    double velocityY = wrappedOutVelocityPacket.getY();
-                    double velocityZ = wrappedOutVelocityPacket.getZ();
-
-                    user.getVelocityData().setVelocityX(velocityX);
-                    user.getVelocityData().setVelocityY(velocityY);
-                    user.getVelocityData().setVelocityZ(velocityZ);
+                    velocityX = wrappedOutVelocityPacket.getX();
+                    velocityY = wrappedOutVelocityPacket.getY();
+                    velocityZ = wrappedOutVelocityPacket.getZ();
 
                     //user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6D);
                     //user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6D);
 
-                    double horizontal = MathUtil.hypot(user.getVelocityData().getVelocityX(), user.getVelocityData().getVelocityZ());
-                    double vertical = Math.pow(user.getVelocityData().getVelocityY() + 2.0, 2.0) * 5.0;
-
-                    user.getVelocityData().setHorizontalVelocity(horizontal);
-                    user.getVelocityData().setVerticalVelocity(vertical);
+                    horizontal = MathUtil.hypot(velocityX, velocityZ);
+                    vertical = Math.pow(velocityY + 2.0, 2.0) * 5.0;
 
 
                     if (user.getMovementData().isOnGround() && user.getPlayer().getLocation().getY() % 1.0 == 0.0) {
-                        user.getVelocityData().setVerticalVelocity(velocityY);
+                        vertical = velocityY;
                     }
 
                     user.getCombatData().setLastVelocitySqr((Math.sqrt(velocityX * velocityX + velocityZ * velocityZ) * 0.2));
 
+                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
+                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
 
                 }
             }
 
-            if (type.equalsIgnoreCase(Packet.Client.FLYING) || type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK)) {
-                if (TimeUtils.elapsed(user.getCombatData().getLastUseEntityPacket()) < 250
+            if (type.equalsIgnoreCase(Packet.Client.USE_ENTITY)) {
+                WrappedInUseEntityPacket use = new WrappedInUseEntityPacket(packet, user.getPlayer());
+                if (use.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK
                         || user.getMovementData().isLastSprint()) {
 
-                    // user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6D);
-                    //   user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6D);
-                    //user.getVelocityData().setHorizontalVelocityTrans(user.getVelocityData().getHorizontalVelocityTrans() * 0.6);
+                    velocityX *= 0.6F;
+                    velocityZ *= 0.6F;
+
 
                 }
             }
@@ -81,8 +76,8 @@ public class VelocityProcessor {
 
                 if (id == currentIDVelocity) {
                     user.getLagProcessor().setVelocityPing((System.currentTimeMillis() - user.getLagProcessor().getHitTime()));
-                    user.getVelocityData().getLastVelocityHorizontal().put(user.getVelocityData().getHorizontalVelocity(), currentIDVelocity);
-                    user.getVelocityData().getLastVelocityVertical().put(user.getVelocityData().getVerticalVelocity(), currentIDVelocity);
+                    user.getVelocityData().getLastVelocityHorizontal().put(horizontal, currentIDVelocity);
+                    user.getVelocityData().getLastVelocityVertical().put(vertical, currentIDVelocity);
                     user.getVelocityData().setVelocityTicks(0);
                 }
             }

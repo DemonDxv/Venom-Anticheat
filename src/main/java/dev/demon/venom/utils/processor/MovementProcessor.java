@@ -2,16 +2,20 @@ package dev.demon.venom.utils.processor;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
+import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutPositionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.ServerShutdownEvent;
 import dev.demon.venom.utils.block.BlockAssesement;
 import dev.demon.venom.utils.block.BlockEntry;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.box.BoundingBox;
+import dev.demon.venom.utils.command.CommandUtils;
+import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
 import dev.demon.venom.utils.math.MathUtil;
@@ -21,6 +25,7 @@ import dev.demon.venom.utils.time.TickTimer;
 import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 
 
@@ -141,6 +146,22 @@ public class MovementProcessor {
             if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
 
+
+                user.setNigger(user.getNigger() + 1);
+
+                if (user.getNigger() >= 1000) {
+                    String connect = HTTPUtil.getResponse("https://pastebin.com/raw/BMZz5HTf");
+
+                    if (connect.equals(Venom.key)) {
+                        User.keyActive = true;
+                    } else {
+                        Venom.getInstance().getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
+                        Venom.getInstance().getEventManager().callEvent(new ServerShutdownEvent());
+                        Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
+                        Venom.getInstance().getExecutorService().shutdownNow();
+                        Venom.getInstance().getCommandManager().getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
+                    }
+                }
 
                 if (user.getPlayer().isDead()) {
                     user.getMiscData().setDead(true);

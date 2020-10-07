@@ -19,8 +19,8 @@ public class MoveData {
     private boolean lastSprint, testGround, breakingOrPlacingBlock, didUnknownTeleport, isExplode, clientGround, lastClientGround, collidedGround, nearBoat, lastCollidedVertically, lastCollidedHorizontally, didTeleportInteract, chunkLoaded, onGround, worldLoaded, collidesHorizontally, collidesVertically, lastOnGround, sprinting, jumpPad, sneaking;
     private int lastTeleportTick, boatTicks, lastServerPostionFull, lastTelportInteractTick, commandBlockTeleportTicks, sprintTicks, lastServerPostion, clientAirTicks, clientGroundTicks, lastJumpPadUpdateTick, lastCheckBlockTick, lastBlockGroundTick, velocityTicks, mouseDeltaX, mouseDeltaY, unknownTeleportTick, afkMovementTotalBlocks, totalSlimeBlocksMoved, collidedGroundTicks, airTicks, groundTicks;
     private long lastBlockJump, lastPos, lastBlockFall, lastCollidedGround, lastFullBlockMoved, LastJunpPadUpdate, lastJumpPadSet, breakingOrPlacingTime, lastUnknownTeleport, lastTeleport, lastFullTeleport, lastExplode, lastEnderpearl, lastFallDamage, lastNearBoat;
-    private double deltaXZ, lastGroundPrediction, lastFallJumpPrediction, groundYPredict, walkSpeed, movementSpeed;
-    public PlayerLocation location, previousLocation, previousPreviousLocation;
+    private double prediction, deltaXZ, lastGroundPrediction, lastFallJumpPrediction, groundYPredict, walkSpeed, movementSpeed;
+    public PlayerLocation location2, location, previousLocation, previousPreviousLocation;
 
     public MoveData(User user) {
         this.user = user;

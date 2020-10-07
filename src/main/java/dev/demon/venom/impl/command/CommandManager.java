@@ -14,9 +14,9 @@ public class CommandManager {
     private List<Command> commandList = new ArrayList<>();
 
     public CommandManager() {
-        addCommand(new Command(new MainCommand("xan"), "xan", null, "Main command.", true));
-        addCommand(new Command(new MainCommand("xan"), "xan info", "/Xan info <player>", "Information command.", true));
-        addCommand(new Command(new MainCommand("xan"), "xan alerts", "/Xan alerts", "Alerts command.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom", null, "Main command.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom info", "/Venom info <player>", "Information command.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom alerts", "/Venom alerts", "Alerts command.", true));
     }
 
     private void addCommand(Command... commands) {

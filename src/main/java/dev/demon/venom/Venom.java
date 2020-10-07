@@ -4,6 +4,7 @@ import dev.demon.venom.api.event.EventManager;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.Reflections;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.types.WrappedField;
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.api.user.UserManager;
 import dev.demon.venom.impl.command.CommandManager;
 import dev.demon.venom.impl.events.ServerShutdownEvent;
@@ -13,6 +14,7 @@ import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.box.BlockBoxManager;
 import dev.demon.venom.utils.box.impl.BoundingBoxes;
 import dev.demon.venom.utils.command.CommandUtils;
+import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.processor.EntityProcessor;
 import dev.demon.venom.utils.reflection.CraftReflection;
@@ -64,7 +66,7 @@ public class Venom extends JavaPlugin {
     public static int banVL;
 
     public static String banMessage, banCommand, alertsMessage, alertsDev, permissionAlert, permissionPING,
-            permissionCMD, permissionINFO;
+            permissionCMD, permissionINFO, key;
 
     public static Boolean banEnabled, alertsEnabled, banMessageEnabled, enableDebug;
 
@@ -73,6 +75,10 @@ public class Venom extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        cfile = new File(getDataFolder(), "config.yml");
+        saveDefaultConfig();
+        loadConfiguration();
 
         bukkitVersion = Bukkit.getServer().getClass().getPackage().getName().substring(23);
 
@@ -114,16 +120,19 @@ public class Venom extends JavaPlugin {
         Venom.getInstance().getServer().getPluginManager().registerEvents(new BukkitListeners(), Venom.getInstance());
 
 
-        cfile = new File(getDataFolder(), "config.yml");
-        saveDefaultConfig();
-        loadConfiguration();
-
         this.blockBoxManager = new BlockBoxManager();
         this.boxes = new BoundingBoxes();
 
+        getLogger().info("Venom Anticheat has been Successfully Loaded.");
 
+        if (!User.keyActive) {
+            getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
+            getEventManager().callEvent(new ServerShutdownEvent());
+            Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
+            executorService.shutdownNow();
+            commandManager.getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
+        }
 
-        getLogger().info("Xan Anticheat has been Successfully Loaded.");
         super.onEnable();
     }
 
@@ -154,6 +163,9 @@ public class Venom extends JavaPlugin {
         permissionPING = instance.getConfig().getString("Permissions.ping");
         permissionCMD = instance.getConfig().getString("Permissions.command");
         permissionINFO = instance.getConfig().getString("Permissions.info");
+
+
+        key = instance.getConfig().getString("License.key");
 
     }
 }

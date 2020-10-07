@@ -10,14 +10,15 @@ import dev.demon.venom.impl.checks.movement.speed.*;
 import dev.demon.venom.impl.checks.player.badpackets.*;
 import dev.demon.venom.impl.checks.player.timer.*;*/
 
-import dev.demon.venom.impl.checksv2.combat.aimassist.*;
-import dev.demon.venom.impl.checksv2.combat.autoclicker.*;
-import dev.demon.venom.impl.checksv2.combat.killaura.*;
-import dev.demon.venom.impl.checksv2.combat.reach.*;
-import dev.demon.venom.impl.checksv2.movement.fly.*;
-import dev.demon.venom.impl.checksv2.movement.speed.*;
-import dev.demon.venom.impl.checksv2.other.badpackets.*;
-import dev.demon.venom.impl.checksv2.other.timer.*;
+import dev.demon.venom.impl.checks.combat.aimassist.*;
+import dev.demon.venom.impl.checks.combat.autoclicker.*;
+import dev.demon.venom.impl.checks.combat.killaura.*;
+import dev.demon.venom.impl.checks.combat.reach.*;
+import dev.demon.venom.impl.checks.combat.velocity.*;
+import dev.demon.venom.impl.checks.movement.fly.*;
+import dev.demon.venom.impl.checks.movement.speed.*;
+import dev.demon.venom.impl.checks.other.badpackets.*;
+import dev.demon.venom.impl.checks.other.timer.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,17 +45,21 @@ public class CheckManager {
 
             ReachA.class,
 
-            //Movement
-        //    SpeedA.class,
+            VelocityA.class,
+            VelocityB.class,
 
-       //     FlyA.class,
-        //    FlyB.class,
-            FlyDev.class,
+            //Movement
+          //  SpeedA.class,
+            SpeedA.class,
+
+         //   FlyA.class,
+            FlyB.class,
 
             //Other
             BadPacketsA.class,
             BadPacketsB.class,
             BadPacketsC.class,
+            BadPacketsD.class,
 
             TimerA.class,
 

@@ -1,0 +1,148 @@
+package dev.demon.venom.impl.checks.combat.velocity;
+
+import com.avaje.ebean.Transaction;
+import dev.demon.venom.api.check.Check;
+import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.event.AnticheatEvent;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
+import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.TransactionEvent;
+import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.VelocityEvent;
+import dev.demon.venom.utils.location.CustomLocation;
+import dev.demon.venom.utils.math.MathUtil;
+import dev.demon.venom.utils.processor.PredictionProcessor;
+import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.enchantments.Enchantment;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Map;
+
+@CheckInfo(name = "Velocity", type = "A")
+public class VelocityA extends Check {
+
+    private float getAIMoveSpeed, friction;
+
+    @Override
+    public void onHandle(User user, AnticheatEvent e) {
+        if (e instanceof FlyingEvent) {
+
+            if (user.getBlockData().wallTicks > 0) {
+                violation = 0;
+                return;
+            }
+
+            CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
+
+            double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
+
+            double velocity = MathUtil.hypot(user.getVelocityProcessor().getVelocityX(), user.getVelocityProcessor().getVelocityZ());
+
+            double prediction = velocity;
+
+            int precision = String.valueOf((int) Math.abs(MathUtil.hypot(user.getMovementData().getTo().getX(), user.getMovementData().getTo().getZ()))).length();
+
+            precision = 15 - precision;
+
+            double preD = Double.valueOf("0.5E-" + precision);
+
+            double mx = to.getX() - from.getX();
+            double mz = to.getZ() - from.getZ();
+
+            float motionYaw = (float) (Math.atan2(mz, mx) * 180.0D / Math.PI) - 90.0F;
+
+            int direction = 6;
+
+            motionYaw -= user.getMovementData().getTo().getYaw();
+
+            while (motionYaw > 360.0F)
+                motionYaw -= 360.0F;
+            while (motionYaw < 0.0F)
+                motionYaw += 360.0F;
+
+            motionYaw /= 45.0F;
+
+            float moveS = 0.0F;
+            float moveF = 0.0F;
+
+            if (Math.abs(Math.abs(mx) + Math.abs(mz)) > preD) {
+                direction = (int) new BigDecimal(motionYaw).setScale(1, RoundingMode.HALF_UP).doubleValue();
+
+                if (direction == 1) {
+                    moveF = 1F;
+                    moveS = -1F;
+                } else if (direction == 2) {
+                    moveS = -1F;
+                } else if (direction == 3) {
+                    moveF = -1F;
+                    moveS = -1F;
+                } else if (direction == 4) {
+                    moveF = -1F;
+                } else if (direction == 5) {
+                    moveF = -1F;
+                    moveS = 1F;
+                } else if (direction == 6) {
+                    moveS = 1F;
+                } else if (direction == 7) {
+                    moveF = 1F;
+                    moveS = 1F;
+                } else if (direction == 8) {
+                    moveF = 1F;
+                } else if (direction == 0) {
+                    moveF = 1F;
+                }
+            }
+
+            float strafe = (moveS * 0.98F), forward = (moveF * 0.98F);
+
+            float f = strafe * strafe + forward * forward;
+
+            float var3 = (0.6F * 0.91F);
+            getAIMoveSpeed = 0.1F;
+
+            if (user.getMovementData().isSprinting()) {
+                getAIMoveSpeed = 0.13000001F;
+            }
+
+            float var4 = 0.16277136F / (var3 * var3 * var3);
+
+            if (user.getMovementData().isLastClientGround()) {
+                friction = getAIMoveSpeed * var4;
+            } else {
+                friction = 0.026F;
+            }
+
+            if (f >= 1.0E-4F) {
+                f = (float) Math.sqrt(f);
+                if (f < 1.0F) {
+                    f = 1.0F;
+                }
+                f = friction / f;
+                strafe = strafe * f;
+                forward = forward * f;
+                float f1 = (float) Math.sin(to.getYaw() * (float) Math.PI / 180.0F);
+                float f2 = (float) Math.cos(to.getYaw() * (float) Math.PI / 180.0F);
+                float motionXAdd = (strafe * f2 - forward * f1);
+                float motionZAdd = (forward * f2 + strafe * f1);
+                prediction -= Math.hypot(motionXAdd, motionZAdd);
+            }
+
+
+            if (user.getVelocityData().getVelocityTicks() == 1) {
+                if ((deltaXZ / prediction) <= 0.995) {
+                    alert(user, "" + (deltaXZ / prediction));
+                }
+            }
+        }
+
+        if (e instanceof UseEntityEvent) {
+            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK || user.getMovementData().isLastSprint()) {
+                user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6F);
+                user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6F);
+            }
+        }
+    }
+}

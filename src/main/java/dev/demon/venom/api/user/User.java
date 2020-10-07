@@ -4,6 +4,7 @@ import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.utils.box.BoundingBox;
+import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.math.MathUtil;
 
 import dev.demon.venom.api.check.Check;
@@ -17,13 +18,11 @@ import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
 import dev.demon.venom.utils.math.MathUtil;
-import dev.demon.venom.utils.processor.CombatProcessor;
-import dev.demon.venom.utils.processor.LagProcessor;
-import dev.demon.venom.utils.processor.MovementProcessor;
-import dev.demon.venom.utils.processor.VelocityProcessor;
+import dev.demon.venom.utils.processor.*;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,6 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @Setter
 public class User {
 
+    public static boolean keyActive = false;
     private Player player;
     private UUID uuid;
     private BoundingBox boundingBox;
@@ -54,16 +54,19 @@ public class User {
     private CombatProcessor combatProcessor;
     private LagProcessor lagProcessor;
     private VelocityProcessor velocityProcessor;
+    private PredictionProcessor predictionProcessor;
 
 
     private ScheduledExecutorService executorService;
 
-    private Deque<PlayerLocation> previousLocations = new LinkedList<>();
+    private Deque<PlayerLocation> previousLocations = new LinkedList<>(), previousLocations2 = new LinkedList<>();
     //public Queue<PlayerLocation> previousLocations = EvictingQueue.create(10);
 
     private ProtocolVersion protocolVersion;
 
     private long timestamp;
+
+    private int nigger;
 
     private boolean banned, wasFlying, waitingForMovementVerify, safe, hasVerify, alerts = true;
     private int inBoxTicks = 0, connectedTick, movementVerifyStage, flyingTick, violation;
@@ -100,8 +103,6 @@ public class User {
         movementData.location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), System.currentTimeMillis());
 
 
-
-
         new BukkitRunnable() {
             public void run() {
 
@@ -127,6 +128,7 @@ public class User {
         velocityProcessor = new VelocityProcessor();
         velocityProcessor.setUser(this);
 
+        predictionProcessor = new PredictionProcessor(this);
 
     }
     public void update(BlockAssesement blockAssesement) {

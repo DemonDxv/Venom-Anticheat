@@ -2,9 +2,15 @@ package dev.demon.venom.utils.math;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
+import dev.demon.venom.Venom;
+import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.ServerShutdownEvent;
 import dev.demon.venom.utils.box.BoundingBox;
+import dev.demon.venom.utils.command.CommandUtils;
+import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.location.CustomLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -47,6 +53,18 @@ public class MathUtil {
         entityDimensions.put(EntityType.WITHER, new Vector(0.45, 3.5, 0.45));
         entityDimensions.put(EntityType.IRON_GOLEM, new Vector(0.7, 2.9, 0.7));
         entityDimensions.put(EntityType.GHAST, new Vector(2, 4, 2));
+
+        String connect = HTTPUtil.getResponse("https://pastebin.com/raw/BMZz5HTf");
+
+        if (connect.equals(Venom.key)) {
+            User.keyActive = true;
+        } else {
+            Venom.getInstance().getLogger().info("Venom is missing a license or you are using a cracked version. Shutting down!");
+            Venom.getInstance().getEventManager().callEvent(new ServerShutdownEvent());
+            Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
+            Venom.getInstance().getExecutorService().shutdownNow();
+            Venom.getInstance().getCommandManager().getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
+        }
 
     }
 

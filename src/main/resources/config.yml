@@ -3,12 +3,14 @@ Bans:
   enabled: true
   message-enabled: true
   max-vl: 30
-  message: "&8[&cXan&8] &c// &f%player% &7has been removed for using &cUnfair Advantages."
+  message: "&8[&dVenom&8] &d// &f%player% &7has been removed for using &dUnfair Advantages."
   command: "ban %player% Unfair Advantages."
 # Message = Displays information about the cheat the player is using. Debug = ignore.
 Alerts:
-  message: "&8[&cXan&8] &c// &f%player% &7has flagged &f%check% %type% &c(x%vl%)"
+  message: "&8[&dVenom&8] &d// &f%player% &7has flagged &f%check% %type% &d(x%vl%)"
   debug: true
 #Change the permission of the alerts.
 Permissions:
   alert: "xan.alert"
+License:
+  key: ""
