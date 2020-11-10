@@ -4,16 +4,21 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
-import org.bukkit.Bukkit;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.utils.time.TimeUtils;
 
-@CheckInfo(name = "Velocity", type = "D")
+@CheckInfo(name = "Velocity", type = "D", banvl = 3)
 public class VelocityD extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
+
+            if (user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
+                return;
+            }
+
             double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
-            double velocityY = user.getVelocityProcessor().getVertical();
+            double velocityY = user.getVelocityProcessor().getVerticalTransaction();
 
             velocityY -= 0.08D;
             velocityY *= 0.9800000190734863D;
@@ -22,8 +27,9 @@ public class VelocityD extends Check {
 
 
             if (user.getVelocityData().getVelocityTicks() == 2) {
-                if (ratio <= 0.9999 && deltaY <= 0.42F && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
-                    alert(user, "VV -> "+ratio + "%");
+                if (ratio <= 0.9998 && deltaY <= 0.42F && velocityY < 1
+                        && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                    alert(user, false,"VV -> "+ratio + "%");
                 }
             }
         }

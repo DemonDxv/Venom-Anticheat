@@ -6,15 +6,14 @@ import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PastLocation;
 import dev.demon.venom.utils.location.RayTrace;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.math.Verbose;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
@@ -22,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@CheckInfo(name = "Killaura", type = "C")
+@CheckInfo(name = "Killaura", type = "C", banvl = 5)
 public class KillauraC extends Check {
 
     private Verbose verbose = new Verbose();
@@ -54,14 +53,14 @@ public class KillauraC extends Check {
                     boolean interspects = boundingBoxList.stream().noneMatch(box -> trace.intersects(box, box.getMinimum().distance(loc.toVector()) + 1.0, 0.2));
 
                     if (interspects && verbose.flag(8, 10000L)) {
-                        alert(user, "bbs=" + boundingBoxList.size(), "pls=" + pastLocation.size(), "verbose=" + verbose.getVerbose());
+                        alert(user, false,"BBS -> " + boundingBoxList.size());
                     } else {
                         user.setInBoxTicks(user.getInBoxTicks() + 1);
                     }
                 }
             }
         }
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingInEvent) {
             if (user.getCombatData().getLastEntityAttacked() != null) {
                 hitBoxPastLocations.addLocation(user.getCombatData().getLastEntityAttacked().getLocation());
             }

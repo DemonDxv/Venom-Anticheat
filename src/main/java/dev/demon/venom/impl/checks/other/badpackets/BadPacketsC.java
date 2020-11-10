@@ -5,19 +5,19 @@ import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.ArmAnimationEvent;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 
 
-@CheckInfo(name = "BadPackets", type = "C")
+@CheckInfo(name = "BadPackets", type = "C", banvl = 10)
 public class BadPacketsC extends Check {
 
     private boolean swing;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingInEvent) {
             swing = false;
         }
         if (e instanceof ArmAnimationEvent) {
@@ -27,7 +27,7 @@ public class BadPacketsC extends Check {
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
                 if (!swing && !user.getLagProcessor().isLagging()) {
-                    alert(user, "S -> " + swing);
+                    alert(user, false,"S -> " + swing);
                 }
             }
         }

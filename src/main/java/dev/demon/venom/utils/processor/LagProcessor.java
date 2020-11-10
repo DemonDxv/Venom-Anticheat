@@ -56,7 +56,7 @@ public class LagProcessor {
 
                 int currentSpikeDifference = Math.abs(lastSpikeLagTick - user.getConnectedTick());
 
-                //Calulcate if they did spike in the connection
+                //Calulcate if they did spike inevents the connection
                 if (currentSpikeDifference < 100 && user.getConnectedTick() > 105) {
                     spikeLag = true;
                 } else {
@@ -72,7 +72,7 @@ public class LagProcessor {
 
                 lastPingDiff = Math.abs(ping - lastPing);
 
-                lastPing = ping;
+                lastPing = currentPing;
 
                 currentPing = (int) (System.currentTimeMillis() - lastKeepAlive);
 
@@ -100,7 +100,7 @@ public class LagProcessor {
 
             if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
 
-                //Magic is here, we difference the transaction ping between the current and last to see if they are spiking in connection to the server
+                //Magic is here, we difference the transaction ping between the current and last to see if they are spiking inevents connection to the server
 
                 WrappedInTransactionPacket wrappedInTransactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
                 short id = wrappedInTransactionPacket.getAction();

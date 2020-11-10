@@ -1,4 +1,4 @@
-package dev.demon.venom.impl.events;
+package dev.demon.venom.impl.events.inevents;
 
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.types.BaseBlockPosition;
@@ -9,14 +9,14 @@ import org.bukkit.inventory.ItemStack;
 
 @Getter
 @Setter
-public class BlockSentEvent extends AnticheatEvent {
+public class BlockPlaceEvent extends AnticheatEvent {
 
     private WrappedEnumDirection face;
     private ItemStack itemStack;
     private BaseBlockPosition position;
     private float vecX, vecY, vecZ;
 
-    public BlockSentEvent(float vecX, float vecY, float vecZ, WrappedEnumDirection face, BaseBlockPosition position, ItemStack itemStack) {
+    public BlockPlaceEvent(float vecX, float vecY, float vecZ, WrappedEnumDirection face, BaseBlockPosition position, ItemStack itemStack) {
         this.vecX = vecX;
         this.vecY = vecY;
         this.vecZ = vecZ;

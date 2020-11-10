@@ -8,4 +8,6 @@ public @interface CheckInfo {
     String name();
 
     String type();
+
+    int banvl();
 }

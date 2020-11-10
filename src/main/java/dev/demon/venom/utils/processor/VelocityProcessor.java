@@ -7,17 +7,22 @@ import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.utils.math.MathUtil;
-import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
 
 
 @Getter
 @Setter
 public class VelocityProcessor {
     private User user;
-    public double velocityX, velocityY, velocityZ, horizontal, vertical;
+    public double velocityX, velocityY, velocityZ, horizontal, vertical, horizontalTransaction, verticalTransaction;
+    private boolean blocking;
+    public HashMap<Double, Short> lastVelocityVertical = new HashMap(), lastVelocityHorizontal = new HashMap();
 
     public void update(Object packet, String type) {
         if (user != null) {
@@ -25,6 +30,10 @@ public class VelocityProcessor {
                 WrappedOutVelocityPacket wrappedOutVelocityPacket = new WrappedOutVelocityPacket(packet, user.getPlayer());
 
                 if (wrappedOutVelocityPacket.getId() == user.getPlayer().getEntityId()) {
+
+
+                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
+                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
                     user.getLagProcessor().setHitTime(System.currentTimeMillis());
 
@@ -48,22 +57,37 @@ public class VelocityProcessor {
 
                     user.getCombatData().setLastVelocitySqr((Math.sqrt(velocityX * velocityX + velocityZ * velocityZ) * 0.2));
 
-                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
-                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
-
 
                 }
             }
 
-            if (type.equalsIgnoreCase(Packet.Client.USE_ENTITY)) {
-                WrappedInUseEntityPacket use = new WrappedInUseEntityPacket(packet, user.getPlayer());
-                if (use.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK
-                        || user.getMovementData().isLastSprint()) {
+            if (type.equalsIgnoreCase(Packet.Client.BLOCK_PLACE)) {
+                if (user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
+                    blocking = true;
+                }
+            }
 
+            if (type.equalsIgnoreCase(Packet.Client.BLOCK_DIG)) {
+                if (user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
+                    blocking = false;
+                }
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
+                if (blocking) {
                     velocityX *= 0.6F;
                     velocityZ *= 0.6F;
+                }
+            }
 
-
+            if (type.equalsIgnoreCase(Packet.Client.USE_ENTITY)) {
+                WrappedInUseEntityPacket useEntityPacket = new WrappedInUseEntityPacket(packet, user.getPlayer());
+                if (useEntityPacket.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK || user.getMovementData().isLastSprint()) {
+                    velocityX *= 0.6F;
+                    velocityZ *= 0.6F;
+                }
+                if (useEntityPacket.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
+                    blocking = false;
                 }
             }
 
@@ -76,8 +100,8 @@ public class VelocityProcessor {
 
                 if (id == currentIDVelocity) {
                     user.getLagProcessor().setVelocityPing((System.currentTimeMillis() - user.getLagProcessor().getHitTime()));
-                    user.getVelocityData().getLastVelocityHorizontal().put(horizontal, currentIDVelocity);
-                    user.getVelocityData().getLastVelocityVertical().put(vertical, currentIDVelocity);
+                    lastVelocityHorizontal.put(horizontal, currentIDVelocity);
+                    lastVelocityVertical.put(vertical, currentIDVelocity);
                     user.getVelocityData().setVelocityTicks(0);
                 }
             }

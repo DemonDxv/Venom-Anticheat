@@ -1,38 +1,50 @@
 package dev.demon.venom.impl.checks.combat.velocity;
 
-import com.avaje.ebean.Transaction;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
+import dev.demon.venom.api.tinyprotocol.api.Packet;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.TransactionEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
-import dev.demon.venom.impl.events.VelocityEvent;
+import dev.demon.venom.impl.events.inevents.*;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
-import dev.demon.venom.utils.processor.PredictionProcessor;
 import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.enchantments.Enchantment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
-@CheckInfo(name = "Velocity", type = "A")
+@CheckInfo(name = "Velocity", type = "A", banvl = 2)
 public class VelocityA extends Check {
 
     private float getAIMoveSpeed, friction;
+    private double lastDeltaXZ, lastVelocity;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent) {
+
+
+            if (user.getVelocityData().getVelocityTicks() < 5) {
+
+                for (Map.Entry<Double, Short> doubleShortEntry : user.getVelocityProcessor().getLastVelocityHorizontal().entrySet()) {
+
+                    if (user.getMiscData().getTransactionIDVelocity() == doubleShortEntry.getValue()) {
+                        user.getVelocityProcessor().setHorizontalTransaction((Double) ((Map.Entry) doubleShortEntry).getKey());
+                        user.getVelocityProcessor().getLastVelocityHorizontal().clear();
+                    }
+                }
+            }
 
             if (user.getBlockData().wallTicks > 0
                     || user.getBlockData().fenceTicks > 0
-                    || user.getMovementData().isCollidesHorizontally()) {
+                    || user.getMovementData().isCollidesHorizontally()
+                    || user.generalCancel()
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastFallDamage()) < 1000L) {
                 return;
             }
 
@@ -40,7 +52,8 @@ public class VelocityA extends Check {
 
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
 
-            double velocity = MathUtil.hypot(user.getVelocityProcessor().getVelocityX(), user.getVelocityProcessor().getVelocityZ());
+
+            double velocity = Math.hypot(user.getVelocityProcessor().velocityX, user.getVelocityProcessor().velocityZ);
 
             double prediction = velocity;
 
@@ -104,7 +117,7 @@ public class VelocityA extends Check {
             float var3 = (0.6F * 0.91F);
             getAIMoveSpeed = 0.1F;
 
-            if (user.getMovementData().isSprinting()) {
+            if (user.getMovementData().isSprinting() || user.getMovementData().isLastSprint()) {
                 getAIMoveSpeed = 0.13000001F;
             }
 
@@ -128,22 +141,29 @@ public class VelocityA extends Check {
                 float f2 = (float) Math.cos(to.getYaw() * (float) Math.PI / 180.0F);
                 float motionXAdd = (strafe * f2 - forward * f1);
                 float motionZAdd = (forward * f2 + strafe * f1);
-                prediction -= Math.hypot(motionXAdd, motionZAdd);
+                if (user.getVelocityData().getVelocityTicks() == 1) {
+                    prediction -= Math.hypot(motionXAdd, motionZAdd);
+                } else if (user.getVelocityData().getVelocityTicks() == 2) {
+                    prediction -= Math.hypot(motionXAdd, motionZAdd);
+                }
             }
+
+            if (user.getMiscData().getSpeedPotionTicks() > 0) {
+                prediction -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.03F);
+            }
+
+
+            double fullVelocity = (deltaXZ / prediction);
 
 
             if (user.getVelocityData().getVelocityTicks() == 1) {
-                if ((deltaXZ / prediction) <= 0.995) {
-                    alert(user, "HV -> " + (deltaXZ / prediction) + "%");
+                if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                    alert(user, false,"HV -> " + (deltaXZ / prediction) + "%");
                 }
+                lastVelocity = fullVelocity;
             }
-        }
 
-        if (e instanceof UseEntityEvent) {
-            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK || user.getMovementData().isLastSprint()) {
-                user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6F);
-                user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6F);
-            }
+            lastDeltaXZ = deltaXZ;
         }
     }
 }

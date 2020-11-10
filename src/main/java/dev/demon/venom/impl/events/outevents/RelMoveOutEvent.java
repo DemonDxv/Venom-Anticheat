@@ -1,4 +1,4 @@
-package dev.demon.venom.impl.events;
+package dev.demon.venom.impl.events.outevents;
 
 import dev.demon.venom.api.event.AnticheatEvent;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RelMoveEvent extends AnticheatEvent {
+public class RelMoveOutEvent extends AnticheatEvent {
 
     @Getter
     @Setter
@@ -14,7 +14,7 @@ public class RelMoveEvent extends AnticheatEvent {
     private float yaw, pitch;
     private boolean clientGround, pos, look;
 
-    public RelMoveEvent(double x, double y, double z, float pitch, float yaw, boolean clientGround, boolean pos, boolean look) {
+    public RelMoveOutEvent(double x, double y, double z, float pitch, float yaw, boolean clientGround, boolean pos, boolean look) {
         this.x = x;
         this.y = y;
         this.z = z;

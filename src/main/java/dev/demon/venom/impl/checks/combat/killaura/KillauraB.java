@@ -4,11 +4,11 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 
 
-@CheckInfo(name = "Killaura", type = "B")
+@CheckInfo(name = "Killaura", type = "B", banvl = 10)
 public class KillauraB extends Check {
 
     private double lastDeltaXZ;
@@ -23,11 +23,11 @@ public class KillauraB extends Check {
             double differenceXZ = Math.abs(deltaXZ - lastDeltaXZ);
 
             if (user.getMovementData().isSprinting() && differenceXZ <= 0.01) {
-                if (violation++ > 15) {
-                    alert(user);
+                if (violation++ > 7) {
+                    alert(user,false, "Keep Sprint");
                 }
             } else {
-                violation = 0;
+                violation *= 0.25;
             }
 
             lastDeltaXZ = deltaXZ;

@@ -5,6 +5,7 @@ import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -12,6 +13,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class BoundingBox {
 
@@ -45,6 +47,31 @@ public class BoundingBox {
 
         return new BoundingBox(newMinX, newMinY, newMinZ, newMaxX, newMaxY, newMaxZ);
     }
+
+    public BoundingBox move(final double x, final double y, final double z) {
+        this.minX += x;
+        this.minY += y;
+        this.minZ += z;
+
+        this.maxX += x;
+        this.maxY += y;
+        this.maxZ += z;
+
+        return this;
+    }
+
+    public BoundingBox expand(final double x, final double y, final double z) {
+        this.minX -= x;
+        this.minY -= y;
+        this.minZ -= z;
+
+        this.maxX += x;
+        this.maxY += y;
+        this.maxZ += z;
+
+        return this;
+    }
+
 
     public BoundingBox add(Vector vector) {
         float x = (float) vector.getX(), y = (float) vector.getY(), z = (float) vector.getZ();

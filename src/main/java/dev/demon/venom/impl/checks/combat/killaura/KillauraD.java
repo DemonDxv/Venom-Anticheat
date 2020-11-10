@@ -5,14 +5,13 @@ import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.ArmAnimationEvent;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
-import dev.demon.venom.utils.location.CustomLocation;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.math.Verbose;
 
 
-@CheckInfo(name = "Killaura", type = "D")
+@CheckInfo(name = "Killaura", type = "D", banvl = 10)
 public class KillauraD extends Check {
 
     private int attack, miss, ticks;
@@ -29,7 +28,7 @@ public class KillauraD extends Check {
 
                 if (ratio <= 0.3 && yawDiff > 2.5) {
                     if (verbose.flag(20, 1000L)) {
-                        alert(user, "R -> "+ratio + " Y -> "+yawDiff);
+                        alert(user, false,"R -> "+ratio + " Y -> "+yawDiff);
                     }
                 }
             }
@@ -37,7 +36,7 @@ public class KillauraD extends Check {
         if (e instanceof ArmAnimationEvent) {
             miss++;
         }
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingInEvent) {
             ticks++;
 
             if (ticks >= 100) {

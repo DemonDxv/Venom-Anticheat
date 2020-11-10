@@ -4,14 +4,18 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
+import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 
-@CheckInfo(name = "Speed", type = "A")
+@CheckInfo(name = "Speed", type = "A", banvl = 10)
 public class SpeedA extends Check {
 
     private double lastDeltaXZ;
@@ -21,9 +25,9 @@ public class SpeedA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent) {
 
-            if (user.generalCancel()) {
+            if (user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
                 return;
             }
 
@@ -31,10 +35,6 @@ public class SpeedA extends Check {
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
 
             double prediction = lastDeltaXZ * 0.91F;
-
-            if (user.getMovementData().getClientGroundTicks() > 4) {
-                prediction *= 0.6F;
-            }
 
             if (!user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
                 prediction += 0.2F;
@@ -94,12 +94,13 @@ public class SpeedA extends Check {
 
             DecimalFormat df2 = new DecimalFormat("0.00");
 
+            double max = user.getMovementData().isClientGround() && lastDeltaXZ == 0 ? 0.2 : 0.0;
 
-            if (difference > 0.0) {
-                alert(user, "P -> " + df2.format(deltaXZ / prediction) + "%");
+            if (difference > max && (deltaXZ / prediction) > 0.0 && user.getConnectedTick() > 250) {
+                alert(user, false,"P -> " + df2.format(deltaXZ / prediction) + "%");
             }
 
-            lastDeltaXZ = Math.max(deltaXZ, 0.1);
+            lastDeltaXZ = deltaXZ;
         }
     }
 }

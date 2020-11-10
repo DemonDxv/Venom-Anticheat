@@ -4,15 +4,16 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.ArmAnimationEvent;
-import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.MathUtil;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CheckInfo(name = "AutoClicker", type = "F")
+@CheckInfo(name = "Clicker", type = "F", banvl = 30)
 public class AutoClickerF extends Check {
 
     private int movements;
@@ -30,7 +31,7 @@ public class AutoClickerF extends Check {
 
                     if (kurtosis > 20 || Double.isNaN(kurtosis)) {
                         if (violation++ > 1) {
-                            alert(user, "K -> "+kurtosis);
+                            alert(user, true,"K -> "+kurtosis);
                         }
                     } else violation -= Math.min(violation, 0.125);
 
@@ -38,8 +39,14 @@ public class AutoClickerF extends Check {
                 }
             }
             movements = 0;
-        } else if (e instanceof FlyingEvent) {
+        } else if (e instanceof FlyingInEvent) {
             movements++;
+        }
+
+        if (e instanceof BlockDigEvent) {
+            movements = 0;
+            delays.clear();
+            violation = 0;
         }
     }
 }

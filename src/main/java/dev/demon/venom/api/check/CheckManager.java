@@ -1,15 +1,5 @@
 package dev.demon.venom.api.check;
 
-/*
-import dev.demon.venom.impl.checks.combat.autoclicker.*;
-import dev.demon.venom.impl.checks.combat.killaura.*;
-import dev.demon.venom.impl.checks.combat.reach.*;
-import dev.demon.venom.impl.checks.combat.velocity.*;
-import dev.demon.venom.impl.checks.movement.flight.*;
-import dev.demon.venom.impl.checks.movement.speed.*;
-import dev.demon.venom.impl.checks.player.badpackets.*;
-import dev.demon.venom.impl.checks.player.timer.*;*/
-
 import dev.demon.venom.impl.checks.combat.aimassist.*;
 import dev.demon.venom.impl.checks.combat.autoclicker.*;
 import dev.demon.venom.impl.checks.combat.killaura.*;
@@ -32,6 +22,7 @@ public class CheckManager {
             AimAssistB.class,
             AimAssistC.class,
             AimAssistD.class,
+            AimAssistE.class,
 
             AutoClickerA.class,
             AutoClickerB.class,
@@ -41,32 +32,61 @@ public class CheckManager {
             AutoClickerF.class,
             AutoClickerG.class,
             AutoClickerH.class,
+            AutoClickerI.class,
+            AutoClickerJ.class,
+            AutoClickerK.class,
 
             KillauraA.class,
             KillauraB.class,
             KillauraC.class,
             KillauraD.class,
+            KillauraE.class,
+            KillauraF.class,
+            KillauraG.class,
+            KillauraH.class,
+            KillauraI.class,
 
             ReachA.class,
-            ReachB.class,
 
             VelocityA.class,
             VelocityB.class,
             VelocityC.class,
             VelocityD.class,
             VelocityE.class,
+            VelocityF.class,
 
             //Movement
             SpeedA.class,
 
             FlyA.class,
             FlyB.class,
+            FlyC.class,
+
 
             //Other
             BadPacketsA.class,
             BadPacketsB.class,
             BadPacketsC.class,
             BadPacketsD.class,
+            BadPacketsE.class,
+            BadPacketsF.class,
+            BadPacketsG.class,
+            BadPacketsH.class,
+            BadPacketsI.class,
+            BadPacketsJ.class,
+            BadPacketsK.class,
+          //  BadPacketsL.class,
+          //  BadPacketsM.class,
+          //  BadPacketsN.class,
+          //  BadPacketsO.class,
+            BadPacketsP.class,
+            BadPacketsQ.class,
+            BadPacketsR.class,
+            BadPacketsS.class,
+          //  BadPacketsT.class,
+            BadPacketsU.class,
+            BadPacketsV.class,
+            BadPacketsW.class,
 
             TimerA.class,
 

@@ -4,26 +4,20 @@ import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.utils.box.BoundingBox;
-import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.math.MCSmoothing;
 import dev.demon.venom.utils.math.MathUtil;
 
-import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckManager;
 import dev.demon.venom.api.tinyprotocol.api.ProtocolVersion;
 import dev.demon.venom.api.user.sub.*;
-import dev.demon.venom.impl.events.FlyingEvent;
 import dev.demon.venom.utils.block.BlockAssesement;
 import dev.demon.venom.utils.block.BlockUtil;
-import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
-import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.processor.*;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -80,6 +74,7 @@ public class User {
 
     public final List<Check> checks;
 
+
     //Optifine things
     public long lastEventCall, lastBan, lastOptifine, lastOptifineREE, lastRetardOpitfineSpam, lastAimAssistACE;
     public int optifineSmoothing2, lastClientSmoothingValue, optifineSmoothing, LastSmoothingCounter, smoothingCounter, optifineSmoothSens, optifinePitchSmooth, optifineSameCount, optifineConstantVL2, optifineConstantVL, optifineSmoothingFix, killauraAYawReset, killauraAPitchReset, aimAssistsACount, optifineSmoothingTicks;
@@ -88,7 +83,24 @@ public class User {
     public float lastYawDelta, lastSmoothYaw;
     public boolean cineCamera, usingNewOptifine, usingNewOptifinePitch;
 
+    public HashMap<Check, Integer> vl = new HashMap<>();
 
+    public void addVL(Check check) {
+        if (vl.containsKey(check)) {
+            vl.put(check, vl.get(check) + 1);
+        } else {
+            vl.put(check, 1);
+        }
+    }
+    public void resetVL(Check check) {
+        if (vl.containsKey(check)) {
+            vl.clear();
+        }
+    }
+
+    public int getVL(Check check) {
+        return vl.get(check) == null ? 0 : vl.get(check);
+    }
 
     public User(Player player) {
         this.player = player;
@@ -117,20 +129,10 @@ public class User {
 
         new BukkitRunnable() {
             public void run() {
-                PlayerLocation location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), movementData.getTo().getYaw(), movementData.getTo().getPitch());
 
-                getMovementData().setLocation(location);
-
-
-                if (getMovementData().getLocation() != null) {
-                    getMovementData().setPreviousLocation(getMovementData().getLocation());
-                    getPreviousLocations().add(location);
-                }
-
-
-                getPreviousLocs().add(new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), movementData.getTo().getYaw(), movementData.getTo().getPitch()));
             }
         }.runTaskTimer(Venom.getInstance(), 0L, 1L);
+
 
 
     setupProcessors();

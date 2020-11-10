@@ -7,6 +7,7 @@ import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutPositionPacket;
+import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.ServerShutdownEvent;
@@ -26,6 +27,8 @@ import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 
 
@@ -145,6 +148,9 @@ public class MovementProcessor {
 
             if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
+
+                WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (byte) -1, false);
+                TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
                 if (user.getPlayer().isDead()) {
                     user.getMiscData().setDead(true);
@@ -407,7 +413,7 @@ public class MovementProcessor {
 
             user.getMovementData().setOnGround(blockAssesement.isOnGround());
 
-            user.getMovementData().setTestGround(blockAssesement.isTestGround());
+        //    user.getMovementData().setTestGround(blockAssesement.isTestGround());
 
             user.getMovementData().setCollidedGround(blockAssesement.isCollidedGround());
 
@@ -419,6 +425,8 @@ public class MovementProcessor {
             user.update(blockAssesement);
         }
     }
+
+
     private void updateSensitityPrediction() {
 
         if (user.getMovementData().getTo() != null && user.getMovementData().getFrom() != null) {

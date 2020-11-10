@@ -3,30 +3,32 @@ package dev.demon.venom.impl.checks.combat.velocity;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
+import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-@CheckInfo(name = "Velocity", type = "B")
+@CheckInfo(name = "Velocity", type = "B", banvl = 3)
 public class VelocityB extends Check {
 
     private float getAIMoveSpeed, friction;
-    private double lastDeltaXZ;
+    private double lastDeltaXZ, lastVelocity;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
 
             if (user.getBlockData().wallTicks > 0
                     || user.getBlockData().fenceTicks > 0
-                    || user.getMovementData().isCollidesHorizontally()) {
+                    || user.getMovementData().isCollidesHorizontally()
+                    || user.generalCancel()
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastFallDamage()) < 1000L) {
                 return;
             }
 
@@ -34,7 +36,8 @@ public class VelocityB extends Check {
 
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
 
-            double velocity = MathUtil.hypot(user.getVelocityProcessor().getVelocityX(), user.getVelocityProcessor().getVelocityZ());
+
+            double velocity = Math.hypot(user.getVelocityProcessor().velocityX, user.getVelocityProcessor().velocityZ);
 
             double prediction = velocity;
 
@@ -98,7 +101,7 @@ public class VelocityB extends Check {
             float var3 = (0.6F * 0.91F);
             getAIMoveSpeed = 0.1F;
 
-            if (user.getMovementData().isSprinting()) {
+            if (user.getMovementData().isSprinting() || user.getMovementData().isLastSprint()) {
                 getAIMoveSpeed = 0.13000001F;
             }
 
@@ -125,15 +128,20 @@ public class VelocityB extends Check {
                 prediction -= Math.hypot(motionXAdd, motionZAdd);
             }
 
-            double horizontal = (deltaXZ / (prediction - lastDeltaXZ)) - 0.13000001F - 0.026F;
+            if (user.getMiscData().getSpeedPotionTicks() > 0) {
+                prediction -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.03F);
+            }
 
+            double fullVelocity = (deltaXZ / prediction);
 
-            if (user.getVelocityData().getVelocityTicks() == 2) {
-                if (horizontal < 1 && horizontal >= 0) {
-                    alert(user, "HV -> " + horizontal + "%");
+            if (user.getVelocityData().getVelocityTicks() == 3) {
+                if (!user.getMovementData().isClientGround()) {
+
+                  //  Bukkit.broadcastMessage("" + fullVelocity);
                 }
             }
-            lastDeltaXZ = prediction;
+            lastVelocity = prediction;
+            lastDeltaXZ = deltaXZ;
         }
     }
 }

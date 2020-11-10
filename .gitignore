@@ -3,7 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,intellij+all,git
 
 ### Git ###
-# Created by git for backups. To disable backups in Git:
+# Created by git for backups. To disable backups inevents Git:
 # $ git config --global mergetool.keepBackup false
 *.orig
 

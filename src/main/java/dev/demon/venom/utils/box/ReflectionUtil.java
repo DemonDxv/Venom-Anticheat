@@ -468,7 +468,7 @@ public class ReflectionUtil {
     }
 
     /**
-     * Method removed in 1.12 and later versions in NMS
+     * Method removed inevents 1.12 and later versions inevents NMS
      **/
     public static Collection<?> getCollidingBlocks(Player player, Object axisAlignedBB) {
         Object world = getWorldHandle(player.getWorld());

@@ -6,38 +6,34 @@ import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
-import dev.demon.venom.impl.events.RelMoveEvent;
-import dev.demon.venom.impl.events.UseEntityEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.location.PlayerLocation;
-import dev.demon.venom.utils.math.MathUtil;
 import org.bukkit.Bukkit;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
-
-@CheckInfo(name = "Reach", type = "A")
+@CheckInfo(name = "Reach", type = "A", banvl = 5)
 public class ReachA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-       /* if (e instanceof FlyingEvent) {
-            PlayerLocation location = new PlayerLocation(((FlyingEvent) e).getX(), ((FlyingEvent) e).getY(), ((FlyingEvent) e).getZ(), System.currentTimeMillis());
+        if (e instanceof FlyingInEvent) {
+            PlayerLocation location = new PlayerLocation(((FlyingInEvent) e).getX(), ((FlyingInEvent) e).getY(), ((FlyingInEvent) e).getZ(), System.currentTimeMillis());
 
             user.getMovementData().setLocation(location);
 
 
             if (user.getMovementData().getLocation() != null) {
                 user.getMovementData().setPreviousLocation(user.getMovementData().getLocation());
-                user.getPreviousLocations().add(location);
             }
 
 
-            user.getPreviousLocs().add(new PlayerLocation(((FlyingEvent) e).getX(), ((FlyingEvent) e).getY(), ((FlyingEvent) e).getZ(), ((FlyingEvent) e).getYaw(), ((FlyingEvent) e).getPitch()));
-        }*/
+            user.getPreviousLocations().add(location);
+
+            if (user.getPreviousLocations().size() > 8) {
+                user.getPreviousLocations().removeFirst();
+            }
+
+        }
 
 
         if (e instanceof UseEntityEvent) {
@@ -48,19 +44,43 @@ public class ReachA extends Check {
                     PlayerLocation location = user.getMovementData().getLocation();
                     PlayerLocation previousLocation = user.getMovementData().getPreviousLocation();
 
+                    double range = Math.sqrt(targetUser.getPreviousLocations().stream()
+                            .mapToDouble(box -> box.getDistanceSquared(location))
+                            .min()
+                            .orElse(0D));
 
-                    double recalc = targetUser.getPreviousLocs().stream().mapToDouble(vec -> vec.getEstimatedLocation(user, user.getLagProcessor().getCurrentPing(), 200).stream().mapToDouble(vec2 -> vec2.getDistanceSquared(location, previousLocation)).min().orElse(0.0)).min().orElse(0.0);
+                    float playerYaw = user.getMovementData().getTo().getYaw();
+                    float playerPitch = user.getMovementData().getTo().getPitch();
 
-                    double range = targetUser.getPreviousLocs().stream().mapToDouble(vec -> vec.getDistanceSquared(location, previousLocation)).min().orElse(0.0);
+                    float targetYaw = targetUser.getMovementData().getTo().getYaw();
+                    float targetPitch = targetUser.getMovementData().getTo().getPitch();
 
-                    range -= recalc;
+                    double offsetX = -Math.cos(Math.toRadians(targetPitch)) * Math.sin(Math.toRadians(targetYaw)) *
+                            -Math.cos(Math.toRadians(playerPitch)) * Math.sin(Math.toRadians(playerYaw));
 
-                    if (range > 7 || user.getCombatData().cancelTicks > 0) {
+                    double offsetY = -Math.sin(Math.toRadians(playerPitch)) * -Math.sin(Math.toRadians(targetPitch));
+
+                    double offsetZ = Math.cos(Math.toRadians(targetPitch)) * Math.cos(Math.toRadians(targetYaw)) *
+                            Math.cos(Math.toRadians(playerPitch)) * Math.cos(Math.toRadians(playerYaw));
+
+                    double threshold = 3.04;
+
+                    if (offsetX + offsetY + offsetZ > 0.4) {
+                        threshold += 0.4;
+                    }
+
+                    if (range > 6.5) {
                         return;
                     }
 
-                    if (range > 3.0 && user.getCombatData().getTransactionHits() <= 1) {
-                        alert(user, "R -> " + range);
+                   // Bukkit.broadcastMessage(""+range);
+
+                    if (range > threshold) {
+                        if ((violation += range - 2.25) > 5D) {
+                            alert(user, false, "R -> "+range);
+                        }
+                    } else {
+                        violation -= Math.min(violation, 0.035);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package dev.demon.venom.impl.events;
+package dev.demon.venom.impl.events.inevents;
 
 import dev.demon.venom.api.event.AnticheatEvent;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FlyingEvent extends AnticheatEvent {
+public class FlyingInEvent extends AnticheatEvent {
 
     @Getter
     @Setter
@@ -14,7 +14,7 @@ public class FlyingEvent extends AnticheatEvent {
     private float yaw, pitch;
     private boolean clientGround, pos, look;
 
-    public FlyingEvent(double x, double y, double z, float pitch, float yaw, boolean clientGround, boolean pos, boolean look) {
+    public FlyingInEvent(double x, double y, double z, float pitch, float yaw, boolean clientGround, boolean pos, boolean look) {
         this.x = x;
         this.y = y;
         this.z = z;

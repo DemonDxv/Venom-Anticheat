@@ -4,22 +4,22 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.ArmAnimationEvent;
-import dev.demon.venom.impl.events.BlockDigEvent;
-import dev.demon.venom.impl.events.BlockSentEvent;
-import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 
 
-@CheckInfo(name = "AutoClicker", type = "A")
+@CheckInfo(name = "Clicker", type = "A", banvl = 3)
 public class AutoClickerA extends Check {
     private int ticks, cps;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingInEvent) {
             if (++ticks == 20) {
-                if (cps >= 20) {
-                    alert(user, "C -> " + cps);
+                if (cps >= 22) {
+                    alert(user, false,"C -> " + cps);
                 }
                 ticks = cps = 0;
             }
@@ -27,7 +27,7 @@ public class AutoClickerA extends Check {
             cps++;
         }
 
-        if (e instanceof BlockDigEvent || e instanceof BlockSentEvent) {
+        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
             ticks = 0;
             cps = 0;
         }

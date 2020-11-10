@@ -4,10 +4,10 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.MathUtil;
 
-@CheckInfo(name = "AimAssist", type = "A")
+@CheckInfo(name = "AimAssist", type = "A", banvl = 10)
 public class AimAssistA extends Check {
 
     private final double offset = Math.pow(2.0, 24.0);
@@ -15,7 +15,7 @@ public class AimAssistA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
+        if (e instanceof FlyingInEvent) {
 
             if (user.isUsingNewOptifine()) {
                 return;
@@ -31,7 +31,7 @@ public class AimAssistA extends Check {
             if (user.getMovementData().getTo().getYaw() != user.getMovementData().getFrom().getYaw()
                     && user.getMovementData().getTo().getPitch() != user.getMovementData().getFrom().getPitch()) {
                 if (diff > 0 && Math.abs(user.getMovementData().getTo().getPitch()) != 90.0) {
-                    if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() < 720L)) {
+                    if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() < 100L)) {
                         if (gcd < 131072L) {
                             if (violation < 25) violation+=2;
                         }else {
@@ -41,7 +41,7 @@ public class AimAssistA extends Check {
                 }
             }
             if (violation >= 20) {
-                alert(user);
+                alert(user, false);
             }
             lastDiff = diff;
         }

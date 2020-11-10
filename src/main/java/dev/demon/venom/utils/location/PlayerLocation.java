@@ -1,16 +1,13 @@
 package dev.demon.venom.utils.location;
 
-import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.api.user.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.util.Vector;
 
 
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -43,14 +40,14 @@ public class PlayerLocation {
 
     public PlayerLocation(double x, double y, double z, long timeStamp) {
         this.x = x;
-        minX = x - 0.41;
-        maxX = x + 0.41;
+        minX = x - 0.3;
+        maxX = x + 0.3;
 
         this.y = y;
 
         this.z = z;
-        minZ = z - 0.41;
-        maxZ = z + 0.41;
+        minZ = z - 0.3;
+        maxZ = z + 0.3;
 
         this.timeStamp = timeStamp;
     }
@@ -65,12 +62,27 @@ public class PlayerLocation {
         return locs;
     }
 
+    public List<PlayerLocation> getEstimatedLocation(User user, long time, long ping, long delta) {
+        return user.getPreviousLocations()
+                .stream()
+                .filter(loc -> time - loc.getTimeStamp() > 0 && time - loc.getTimeStamp() < ping + delta)
+                .collect(Collectors.toList());
+    }
+
 
     public double getDistanceSquared(PlayerLocation location, PlayerLocation lastLocation) {
         double dx = Math.min(Math.abs(location.x - minX), Math.abs(lastLocation.x - maxX));
         double dz = Math.min(Math.abs(location.z - minZ), Math.abs(lastLocation.z - maxZ));
 
         return Math.sqrt(Math.pow(dx, 2.0) + Math.pow(dz, 2.0));
+    }
+
+
+    public double getDistanceSquared(PlayerLocation hitbox) {
+        double dx = Math.min(Math.abs(hitbox.x - minX), Math.abs(hitbox.x - maxX));
+        double dz = Math.min(Math.abs(hitbox.z - minZ), Math.abs(hitbox.z - maxZ));
+
+        return dx * dx + dz * dz;
     }
 
     public Vector toVector() {

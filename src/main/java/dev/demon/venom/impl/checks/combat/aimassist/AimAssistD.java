@@ -4,31 +4,47 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.FlyingEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.utils.math.MathUtil;
+import org.bukkit.Bukkit;
 
-
-@CheckInfo(name = "AimAssist", type = "D")
+@CheckInfo(name = "AimAssist", type = "D", banvl = 10)
 public class AimAssistD extends Check {
 
-    private double lastDeltaPitch;
+    private final double offset = Math.pow(2.0, 24.0);
+    private double lastDiff;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingEvent) {
-            double pitchDelta = user.getMovementData().getPitchDelta();
-            double yawDelta = user.getMovementData().getYawDelta();
+        if (e instanceof FlyingInEvent) {
+            if (((FlyingInEvent) e).isLook() && ((FlyingInEvent) e).isPos()) {
+                if (user.isUsingNewOptifine()) {
+                    return;
+                }
 
-            double pitchDiffDelta = pitchDelta - lastDeltaPitch;
+                if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() > 2000L)
+                        || user.isUsingNewOptifine()
+                        || user.getCombatData().cancelTicks > 0) {
+                        violation = 0;
+                    }
 
-            if (user.isUsingNewOptifine()) {
-                return;
+                double diff = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
+
+                int gcd = String.valueOf(MathUtil.gcd((long) (diff * offset), (long) (lastDiff * offset))).length();
+
+
+                if (user.getMovementData().getTo().getYaw() != user.getMovementData().getFrom().getYaw()
+                        && user.getMovementData().getTo().getPitch() != user.getMovementData().getFrom().getPitch()) {
+                    if (diff > 0 && Math.abs(user.getMovementData().getTo().getPitch()) != 90.0) {
+                        if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() < 100L)) {
+                            if (gcd > 9 || gcd < 5) {
+                                alert(user, false, "GCD -> " + gcd);
+                            }
+                        }
+                    }
+                }
+                lastDiff = diff;
             }
-
-            if (yawDelta > 1.5 && pitchDelta <= 0.009 && pitchDelta > 0) {
-                alert(user, "PD -> "+pitchDelta + " PDD -> "+pitchDiffDelta);
-            }
-
-            lastDeltaPitch = pitchDelta;
         }
     }
 }

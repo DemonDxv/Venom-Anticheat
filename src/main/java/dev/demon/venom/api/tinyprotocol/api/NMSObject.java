@@ -4,6 +4,7 @@
 
 package dev.demon.venom.api.tinyprotocol.api;
 
+import dev.demon.venom.api.tinyprotocol.api.packets.reflections.types.WrappedField;
 import dev.demon.venom.api.tinyprotocol.reflection.FieldAccessor;
 import dev.demon.venom.api.tinyprotocol.reflection.MethodInvoker;
 import dev.demon.venom.api.tinyprotocol.reflection.Reflection;
@@ -173,6 +174,11 @@ public abstract class NMSObject {
         return field.get(object);
     }
 
+    public <T> T fetch(WrappedField field) {
+        return field.get(object);
+    }
+
+
     public <T> T fetch(FieldAccessor<T> field, Object obj) {
         return field.get(obj);
     }
@@ -254,5 +260,6 @@ public abstract class NMSObject {
         public static final String RESPAWN = SERVER + "Respawn";
         public static final String ATTACH = SERVER + "AttachEntity";
         public static final String STATISTICS = SERVER + "Statistics";
+        public static final String CLOSE_WINDOW = SERVER + "CloseWindow";
     }
 }

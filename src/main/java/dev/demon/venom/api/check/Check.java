@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public abstract class Check implements AnticheatListener {
 
     public double violation;
-    public boolean enabled, experimental, ban;
+    public boolean enabled, ban;
 
     private boolean isTestServer = false;
 
@@ -31,25 +31,29 @@ public abstract class Check implements AnticheatListener {
         return CheckManager.getCheckInfo(this).type();
     }
 
+    public Integer getBanVL() {
+        return CheckManager.getCheckInfo(this).banvl();
+    }
+
     public abstract void onHandle(User user, AnticheatEvent e);
 
-    protected void alert(User user, String... strings) {
+    protected void alert(User user, boolean experimental, String... strings) {
 
         StringBuilder dataStr = new StringBuilder();
         for (String s : strings) {
             dataStr.append(s).append((strings.length == 1 ? "" : ", "));
         }
 
-        String alert = Venom.alertsMessage.replace("%player%", user.getPlayer().getName()).replace("%check%", getName()).replace("%type%", getType()).replace("%vl%", String.valueOf(user.getViolation())).replace("&", "§");
+        String alert = Venom.alertsMessage.replace("%player%", user.getPlayer().getName()).replace("%check%", getName()).replace("%type%", getType()).replace("%vl%", String.valueOf(user.getVL(this))).replace("&", "§") + (experimental ? ChatColor.RED + " *" : "");
      //   String alert = ChatColor.DARK_GRAY + "[" + ChatColor.RED +  "Xan" + ChatColor.DARK_GRAY + "]" + ChatColor.RED + " // " + ChatColor.WHITE + user.getPlayer().getName() + ChatColor.GRAY + " has flagged " + ChatColor.WHITE + getName() + ChatColor.WHITE + " " + ChatColor.WHITE + getType() + ChatColor.RED + " (x" + user.getViolation() + ")";
 
 
         if (user.getFlaggedChecks().containsKey(this)) {
-            user.getFlaggedChecks().put(this, user.getFlaggedChecks().get(this) + 2);
+            user.getFlaggedChecks().put(this, user.getFlaggedChecks().get(this) + 1);
         } else user.getFlaggedChecks().put(this, 1);
 
 
-        if (Venom.enableDebug) {
+        if (Venom.enableDebug && !user.isBanned()) {
             TextComponent textComponent = new TextComponent(alert);
 
             if (dataStr.length() > 0) {
@@ -57,12 +61,12 @@ public abstract class Check implements AnticheatListener {
             }
 
             Venom.getInstance().getUserManager().getUsers().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().spigot().sendMessage(textComponent));
-        }else {
+        } else if (!user.isBanned()) {
             Venom.getInstance().getUserManager().getUsers().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().sendMessage(alert));
         }
 
-        if (Venom.banEnabled && user.getViolation() >= Venom.banVL && !user.isBanned() && !user.getPlayer().isOp()) {
-            user.setViolation(0);
+        if (Venom.banEnabled && user.getVL(this) >= getBanVL() && !user.isBanned() && !experimental) {
+            user.resetVL( this);
             user.setBanned(true);
             new BukkitRunnable() {
                 @Override
@@ -77,6 +81,8 @@ public abstract class Check implements AnticheatListener {
         }
 
 
-        user.setViolation(user.getViolation() + 1);
+        if (!experimental && !user.isBanned()) {
+            user.addVL( this);
+        }
     }
 }

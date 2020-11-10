@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An utility class that simplifies reflection in Bukkit plugins.
+ * An utility class that simplifies reflection inevents Bukkit plugins.
  *
  * @author Kristian
  */
@@ -84,7 +84,7 @@ public final class Reflection {
         try {
             return getField(getClass(className), fieldType, index);
         } catch (Exception e) {
-            System.out.println("[WARN] Failed to find field at " + index + " in " + className + " with type " + fieldType.getSimpleName());
+            System.out.println("[WARN] Failed to find field at " + index + " inevents " + className + " with type " + fieldType.getSimpleName());
             return null;
         }
     }
@@ -128,7 +128,7 @@ public final class Reflection {
             }
         }
 
-        // Search in parent classes
+        // Search inevents parent classes
         if (target.getSuperclass() != null)
             return getField(target.getSuperclass(), name, fieldType, index);
 
@@ -173,7 +173,7 @@ public final class Reflection {
             }
         }
 
-        // Search in parent classes
+        // Search inevents parent classes
         if (target.getSuperclass() != null)
             return getField(target.getSuperclass(), name, index);
 
@@ -246,7 +246,7 @@ public final class Reflection {
             }
         }
 
-        // Search in every superclass
+        // Search inevents every superclass
         if (clazz.getSuperclass() != null)
             return getMethod(clazz.getSuperclass(), methodName, params);
 
@@ -274,7 +274,7 @@ public final class Reflection {
             }
         }
 
-        // Search in every superclass
+        // Search inevents every superclass
         if (clazz.getSuperclass() != null)
             return getMethod(clazz.getSuperclass(), index, params);
 
@@ -373,7 +373,7 @@ public final class Reflection {
     }
 
     /**
-     * Retrieve a class in the net.minecraft.server.VERSION.* package.
+     * Retrieve a class inevents the net.minecraft.server.VERSION.* package.
      *
      * @param name - the name of the class, excluding the package.
      * @throws IllegalArgumentException If the class doesn't exist.
@@ -383,7 +383,7 @@ public final class Reflection {
     }
 
     /**
-     * Retrieve a class in the org.bukkit.craftbukkit.VERSION.* package.
+     * Retrieve a class inevents the org.bukkit.craftbukkit.VERSION.* package.
      *
      * @param name - the name of the class, excluding the package.
      * @throws IllegalArgumentException If the class doesn't exist.
