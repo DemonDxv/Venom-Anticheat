@@ -1,6 +1,7 @@
 package dev.demon.venom;
 
 import dev.demon.venom.api.event.EventManager;
+import dev.demon.venom.api.mongo.MongoManager;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.Reflections;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.types.WrappedField;
@@ -54,6 +55,7 @@ public class Venom extends JavaPlugin {
     private BukkitListeners bukkitListener;
     private EventManager eventManager;
     private CommandManager commandManager;
+    private MongoManager mongoManager;
 
     private int currentTicks, lagStartCheck;
     private long lastServerTick, lastServerLag, lastServerStart;
@@ -79,6 +81,7 @@ public class Venom extends JavaPlugin {
         cfile = new File(getDataFolder(), "config.yml");
         saveDefaultConfig();
         loadConfiguration();
+        mongoManager = new MongoManager();
 
         bukkitVersion = Bukkit.getServer().getClass().getPackage().getName().substring(23);
 
@@ -110,7 +113,6 @@ public class Venom extends JavaPlugin {
                 Venom.getInstance().getEntities().put(world.getUID(), bukkitEntities);
             }
         }, 2L, 2L);
-
 
 
         new BlockUtil();

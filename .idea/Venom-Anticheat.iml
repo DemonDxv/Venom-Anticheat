@@ -18,13 +18,6 @@
     <orderEntry type="library" name="Maven: org.github.spigot:1.14.3:1.14.3" level="project" />
     <orderEntry type="library" name="Maven: org.github.spigot:1.12.2:1.12.2" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.12" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.8.8:1.8.8" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.8.3:1.8.3" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.7.10:1.7.10" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.8:1.8" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.11.2:1.11.2" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.14.3:1.14.3" level="project" />
-    <orderEntry type="library" name="Maven: org.github.spigot:1.12.2:1.12.2" level="project" />
-    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.12" level="project" />
+    <orderEntry type="library" name="mongo-java-driver-3.9.1" level="project" />
   </component>
 </module>
