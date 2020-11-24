@@ -31,7 +31,7 @@ public class VelocityE extends Check {
             if (user.getVelocityData().getVelocityTicks() == 3) {
                 if (ratio <= 0.9998 && deltaY <= 0.42F && velocityY < 1
                         && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
-                    alert(user, false,"VV -> "+ratio + "%");
+                    alert(user, true,"VV -> "+ratio + "%");
                 }
             }
 

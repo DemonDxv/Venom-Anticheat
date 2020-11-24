@@ -1,6 +1,5 @@
 package dev.demon.venom.api.user;
 
-import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.utils.box.BoundingBox;
@@ -18,9 +17,7 @@ import dev.demon.venom.utils.processor.*;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -57,7 +54,6 @@ public class User {
     private ScheduledExecutorService executorService;
 
     private Deque<PlayerLocation> previousLocations = new LinkedList<>(), previousLocations2 = new LinkedList<>();
-    public Queue<PlayerLocation> previousLocs = EvictingQueue.create(8);
 
 
     private ProtocolVersion protocolVersion;
@@ -66,7 +62,7 @@ public class User {
 
     private int nigger;
 
-    private boolean banned, wasFlying, waitingForMovementVerify, safe, hasVerify, alerts = true;
+    private boolean connectedTickFix, banned, wasFlying, waitingForMovementVerify, safe, hasVerify, alerts = true;
     private int inBoxTicks = 0, connectedTick, movementVerifyStage, flyingTick, violation;
     public int totalBlockUpdates, totalBlocksCheck, movementVerifyBlocks;
     public WeakHashMap<Short, Long> transactionMap = new WeakHashMap<>();
@@ -127,15 +123,8 @@ public class User {
         movementData.location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), System.currentTimeMillis());
 
 
-        new BukkitRunnable() {
-            public void run() {
 
-            }
-        }.runTaskTimer(Venom.getInstance(), 0L, 1L);
-
-
-
-    setupProcessors();
+        setupProcessors();
 
        // flaggedChecks.clear();
     }

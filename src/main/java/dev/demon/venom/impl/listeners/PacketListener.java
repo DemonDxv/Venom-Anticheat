@@ -74,6 +74,9 @@ public class PacketListener implements AnticheatListener {
                 event = new ClickWindowInEvent(packet.getId(), packet.getAction(), packet.getButton(), packet.getCounter(), packet.getItem(), packet.getMode(), packet.getSlot());
             } else if (e.getType().equalsIgnoreCase(Packet.Client.STEER_VEHICLE)) {
                 event = new SteerVehicleInEvent();
+            } else if (e.getType().equalsIgnoreCase(Packet.Client.CUSTOM_PAYLOAD)) {
+                WrappedInCustomPayloadPacket packet = new WrappedInCustomPayloadPacket(e.getPacket(), user.getPlayer());
+                event = new CustomPayLoadInEvent(packet.getChannel(), packet.getData());
 
                 //Server
 
@@ -97,6 +100,9 @@ public class PacketListener implements AnticheatListener {
                 event = new CloseWindowOutEvent(packet.id);
             } else if (e.getType().equalsIgnoreCase(Packet.Server.RESPAWN)) {
                 event = new RespawnOutEvent();
+            } else if (e.getType().equalsIgnoreCase(Packet.Server.CUSTOM_PAYLOAD)) {
+                WrappedOutCustomPayloadPacket packet = new WrappedOutCustomPayloadPacket(e.getPacket(), user.getPlayer());
+                event = new CustomPayLoadOutEvent(packet.getChannel(), packet.getData());
             }
 
 

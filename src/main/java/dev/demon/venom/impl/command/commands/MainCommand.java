@@ -2,6 +2,7 @@ package dev.demon.venom.impl.command.commands;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.impl.command.commands.sub.AlertsCommand;
+import dev.demon.venom.impl.command.commands.sub.CheckCommand;
 import dev.demon.venom.impl.command.commands.sub.InformationCommand;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -19,6 +20,7 @@ public class MainCommand extends BukkitCommand {
 
     private InformationCommand informationCommand = new InformationCommand();
     private AlertsCommand alertsCommand = new AlertsCommand();
+    private CheckCommand checkCommand = new CheckCommand();
 
     public MainCommand(String name) {
         super(name);
@@ -54,6 +56,9 @@ public class MainCommand extends BukkitCommand {
                     } else if (s.equalsIgnoreCase("alerts")) {
                         found = true;
                         alertsCommand.execute(args, s, commandSender);
+                    } else if (s.equalsIgnoreCase("check")) {
+                        found = true;
+                        checkCommand.execute(args, s, commandSender);
                     }
 
                     if (!found) commandSender.sendMessage(ChatColor.RED + "Sub command doesn't exist!");

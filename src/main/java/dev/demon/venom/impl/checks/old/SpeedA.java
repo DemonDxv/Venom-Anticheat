@@ -1,20 +1,23 @@
-package dev.demon.venom.impl.checks.movement.speed;
+package dev.demon.venom.impl.checks.old;
 
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.outevents.EntityEffectOutEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 
-@CheckInfo(name = "Speed", type = "B", banvl = 10)
-public class SpeedB extends Check {
+@CheckInfo(name = "Speed", type = "A", banvl = 10)
+public class SpeedA extends Check {
 
     private double lastDeltaXZ;
     private float friction, getAIMoveSpeed;
@@ -25,26 +28,22 @@ public class SpeedB extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
 
-            if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
-                    || user.generalCancel()
-                    || user.getBlockData().liquidTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
-                    || user.getMiscData().isNearBoat()) {
+            if (user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
                 return;
             }
 
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
+            double deltaY = to.getY() - from.getY();
 
             double prediction = lastDeltaXZ * 0.91F;
 
-            if (user.getMovementData().getClientGroundTicks() > 4) {
-                prediction *= 0.6F;
-            }
-
             if (!user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
                 prediction += 0.2F;
+            }
+
+            if (user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround() && user.getMovementData().getClientGroundTicks() > 3) {
+                prediction *= 0.6F;
             }
 
             if (user.getVelocityData().getVelocityTicks() <= 20) {
@@ -88,24 +87,21 @@ public class SpeedB extends Check {
                 prediction += Math.hypot(motionXAdd, motionZAdd);
             }
 
-            double difference = (deltaXZ - prediction) / friction;
-            difference -= 0.001;
+            double difference = (deltaXZ - prediction + 0.001) / friction;
 
-            difference -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.2);
+            if (user.getMiscData().getSpeedPotionTicks() > 0) {
+                difference -= user.getMiscData().getSpeedPotionEffectLevel() * 0.2;
+            }
 
             DecimalFormat df2 = new DecimalFormat("0.00");
 
-            if (user.getMovementData().isClientGround()) {
-                if (difference > 0 && user.getConnectedTick() > 250) {
-                    if (violation++ > 2) {
-                        alert(user, false, "Difference -> " + difference);
-                    }
-                } else {
-                    violation -= Math.min(violation, 0.25);
-                }
+            double max = user.getMovementData().isClientGround() && lastDeltaXZ == 0 ? 0.25 : 0.0;
+
+            if (difference > max && user.getConnectedTick() > 250) {
+                alert(user, false,"P -> " + df2.format(deltaXZ / prediction) + "%");
             }
 
-            lastDeltaXZ = Math.max(deltaXZ, 0.1);
+            lastDeltaXZ = deltaXZ;
         }
     }
 }

@@ -39,6 +39,10 @@ public abstract class Check implements AnticheatListener {
 
     protected void alert(User user, boolean experimental, String... strings) {
 
+        if (user.isConnectedTickFix()) {
+            return;
+        }
+
         StringBuilder dataStr = new StringBuilder();
         for (String s : strings) {
             dataStr.append(s).append((strings.length == 1 ? "" : ", "));

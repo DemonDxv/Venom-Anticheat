@@ -6,13 +6,10 @@ package dev.demon.venom.api.tinyprotocol.api;
 
 import dev.demon.venom.api.tinyprotocol.reflection.FieldAccessor;
 import dev.demon.venom.api.tinyprotocol.reflection.Reflection;
-import dev.demon.venom.api.tinyprotocol.reflection.FieldAccessor;
-import dev.demon.venom.api.tinyprotocol.reflection.Reflection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bukkit.entity.Player;
-
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

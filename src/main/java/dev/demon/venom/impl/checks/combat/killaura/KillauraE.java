@@ -19,7 +19,7 @@ public class KillauraE extends Check {
             boolean primePitch = MathUtil.isPrime((int) pitch), primeYaw = MathUtil.isPrime((int) yaw);
 
             if (primePitch && primeYaw) {
-                if (violation++ > 3.2) {
+                if (violation++ > 6.2) {
                     alert(user, false, "Prime Number Check");
                 }
             } else violation -= Math.min(violation, 0.75);

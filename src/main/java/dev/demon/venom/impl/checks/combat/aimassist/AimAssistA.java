@@ -18,6 +18,7 @@ public class AimAssistA extends Check {
         if (e instanceof FlyingInEvent) {
 
             if (user.isUsingNewOptifine()) {
+                violation = 0;
                 return;
             }
 

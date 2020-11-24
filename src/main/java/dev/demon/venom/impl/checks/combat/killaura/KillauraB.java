@@ -6,12 +6,14 @@ import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.location.CustomLocation;
+import dev.demon.venom.utils.math.Verbose;
 
 
 @CheckInfo(name = "Killaura", type = "B", banvl = 10)
 public class KillauraB extends Check {
 
     private double lastDeltaXZ;
+    private Verbose verbose = new Verbose();
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
@@ -22,12 +24,10 @@ public class KillauraB extends Check {
 
             double differenceXZ = Math.abs(deltaXZ - lastDeltaXZ);
 
-            if (user.getMovementData().isSprinting() && differenceXZ <= 0.01) {
-                if (violation++ > 7) {
+            if (user.getMovementData().isSprinting() && deltaXZ > 0.26) {
+                if (verbose.flag(7, 1000L)) {
                     alert(user,false, "Keep Sprint");
                 }
-            } else {
-                violation *= 0.25;
             }
 
             lastDeltaXZ = deltaXZ;

@@ -6,6 +6,7 @@ import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
 import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 
 @CheckInfo(name = "Clicker", type = "I", banvl = 5)
@@ -38,6 +39,9 @@ public class AutoClickerI extends Check {
             outliers = movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
+        }
+        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
+            violation = 0;
         }
     }
 }

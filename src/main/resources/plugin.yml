@@ -1,4 +1,6 @@
 name: Venom
 main: dev.demon.venom.Venom
-version: 1.0
+version: 1.0-HCRival
 author: demon#3711
+depend:
+  - ProtocolLib

@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 
 @Getter
 public class WrappedInEntityActionPacket extends NMSObject {
+
+    // Fields
     private static final String packet = Client.ENTITY_ACTION;
 
     // Fields
@@ -22,19 +24,17 @@ public class WrappedInEntityActionPacket extends NMSObject {
     }
 
     @Override
-    public void updateObject() {
-
+    public void process(Player player, ProtocolVersion version) {
+        if (ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_8)) {
+            action = EnumPlayerAction.values()[Math.min(8, fetch(fieldAction1_7) - 1)];
+        } else {
+            action = EnumPlayerAction.values()[fetch(fieldAction1_8).ordinal()];
+        }
     }
 
     @Override
-    public void process(Player player, ProtocolVersion version) {
-        if (ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_8)) {
-            fieldAction1_7 = fetchField(packet, int.class, 0);
-            action = EnumPlayerAction.values()[Math.min(8, fetch(fieldAction1_7))];
-        } else {
-            fieldAction1_8 = fetchField(packet, Enum.class, 0);
-            action = EnumPlayerAction.values()[fetch(fieldAction1_8).ordinal()];
-        }
+    public void updateObject() {
+
     }
 
     public enum EnumPlayerAction {
@@ -47,5 +47,11 @@ public class WrappedInEntityActionPacket extends NMSObject {
         STOP_RIDING_JUMP,
         OPEN_INVENTORY,
         START_FALL_FLYING
+    }
+
+    static {
+        if(ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_8)) {
+            fieldAction1_7 = fetchField(packet, int.class, 1);
+        } else fieldAction1_8 = fetchField(packet, Enum.class, 0);
     }
 }

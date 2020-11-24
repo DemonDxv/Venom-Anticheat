@@ -17,6 +17,7 @@ public class CommandManager {
         addCommand(new Command(new MainCommand("venom"), "venom", null, "Main command.", true));
         addCommand(new Command(new MainCommand("venom"), "venom info", "/Venom info <player>", "Information command.", true));
         addCommand(new Command(new MainCommand("venom"), "venom alerts", "/Venom alerts", "Alerts command.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom check", "/Venom check <player>", "[New]", true));
     }
 
     private void addCommand(Command... commands) {

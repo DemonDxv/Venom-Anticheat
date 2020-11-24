@@ -1,6 +1,6 @@
 # Max Violation = How many times the player can being detected before being banned. The rest is understandable.
 Bans:
-  enabled: true
+  enabled: false
   message-enabled: true
   max-vl: 30
   message: "&8[&dVenom&8] &d// &f%player% &7has been removed for using &dUnfair Advantages."
@@ -11,6 +11,4 @@ Alerts:
   debug: true
 #Change the permission of the alerts.
 Permissions:
-  alert: "xan.alert"
-License:
-  key: ""
+  alert: "venom.alert"

@@ -36,7 +36,7 @@ public class VelocityC extends Check {
             if (user.getVelocityData().getVelocityTicks() == 1) {
                 if (ratio <= 0.9998 && deltaY <= 0.42F && user.getVelocityProcessor().getVerticalTransaction() < 1
                         && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
-                    alert(user, false,"VV -> "+ratio + "%");
+                    alert(user, true,"VV -> "+ratio + "%");
                 }
             }
         }

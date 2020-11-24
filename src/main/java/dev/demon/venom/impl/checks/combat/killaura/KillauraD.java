@@ -26,7 +26,7 @@ public class KillauraD extends Check {
 
                 double ratio = Math.abs((attack - miss) / user.getInBoxTicks());
 
-                if (ratio <= 0.3 && yawDiff > 2.5) {
+                if (ratio <= 0.3 && yawDiff > 2.5 && user.getPlayer().getLocation().distance(((UseEntityEvent) e).getEntity().getLocation()) > 2.8) {
                     if (verbose.flag(20, 1000L)) {
                         alert(user, false,"R -> "+ratio + " Y -> "+yawDiff);
                     }

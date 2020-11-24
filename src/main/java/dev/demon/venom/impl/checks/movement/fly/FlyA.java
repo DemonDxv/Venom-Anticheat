@@ -13,12 +13,17 @@ public class FlyA extends Check {
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent) {
             if (user.generalCancel()
                     || user.getBlockData().blockAboveTicks > 0
                     || user.getVelocityData().getVelocityTicks() < 20
                     || !user.isSafe()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
+                    || user.getMiscData().isNearBoat()
+                    || user.getBlockData().climbableTicks > 0
+                    || user.getBlockData().liquidTicks > 0) {
                 return;
             }
 
@@ -39,7 +44,7 @@ public class FlyA extends Check {
 
             if (deltaY > 0) {
                 if (deltaY > max || deltaY < max && max < 0.5) {
-                    if (!user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                    if (!user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround() && user.getConnectedTick() > 250) {
                         alert(user, false, "DY -> " + deltaY);
                     }
                 }

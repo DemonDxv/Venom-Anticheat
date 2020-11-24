@@ -6,6 +6,7 @@ import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
 import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.MathUtil;
 
@@ -53,6 +54,10 @@ public class AutoClickerH extends Check {
             movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
+        }
+        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
+            movements = 0;
+            delays.clear();
         }
     }
 }

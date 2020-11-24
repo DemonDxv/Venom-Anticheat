@@ -3,8 +3,12 @@ package dev.demon.venom.api.tinyprotocol.api;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.packets.ChannelInjector;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInCustomPayloadPacket;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.PacketEvent;
+import dev.demon.venom.utils.PacketBuffer;
+import dev.demon.venom.utils.version.VersionUtil;
+import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -63,22 +67,27 @@ public class TinyProtocolHandler {
             int index = name.lastIndexOf(".");
             String packetName = name.substring(index + 1).replace("PacketPlayInUseItem", "PacketPlayInBlockPlace").replace(Packet.Client.LEGACY_LOOK, Packet.Client.LOOK).replace(Packet.Client.LEGACY_POSITION, Packet.Client.POSITION).replace(Packet.Client.LEGACY_POSITION_LOOK, Packet.Client.POSITION_LOOK);
 
-
-
-
             User user = Venom.getInstance().getUserManager().getUser(sender.getUniqueId());
             PacketEvent event = new PacketEvent(sender, packet, packetName, PacketEvent.Direction.CLIENT);
 
-            if (user != null && (System.currentTimeMillis() - user.getTimestamp()) > 500L) {
-                event = new PacketEvent(sender, packet, packetName, PacketEvent.Direction.CLIENT, user);
-            }
-
             if (user != null) {
+
+                if (packetName.equalsIgnoreCase(Packet.Client.CUSTOM_PAYLOAD) && Venom.getInstance().getVersionUtil().getVersion() != VersionUtil.Version.V1_7) {
+                    WrappedInCustomPayloadPacket wrappedInCustomPayloadPacket = new WrappedInCustomPayloadPacket(packet, sender);
+                    if (wrappedInCustomPayloadPacket.getChannel().equalsIgnoreCase("MC|Brand")) {
+                        PacketBuffer packetBuffer = new PacketBuffer((ByteBuf) wrappedInCustomPayloadPacket.getData());
+                    }
+                }
+
+                if ((System.currentTimeMillis() - user.getTimestamp()) > 20L) {
+                    event = new PacketEvent(sender, packet, packetName, PacketEvent.Direction.CLIENT, user);
+                }
+
                 PacketEvent finalEvent = event;
                 user.getExecutorService().execute(() -> Venom.getInstance().getEventManager().callEvent(finalEvent));
-            }
 
-            return !event.isCancelled() ? event.getPacket() : null;
+                return !event.isCancelled() ? event.getPacket() : null;
+            }
         }
         return packet;
     }

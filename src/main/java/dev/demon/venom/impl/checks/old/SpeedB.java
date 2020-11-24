@@ -1,4 +1,4 @@
-package dev.demon.venom.impl.checks.movement.speed;
+package dev.demon.venom.impl.checks.old;
 
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
@@ -8,29 +8,23 @@ import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.time.TimeUtils;
-import org.bukkit.Bukkit;
 
 import java.text.DecimalFormat;
 
 
-@CheckInfo(name = "Speed", type = "B", banvl = 10)
+@CheckInfo(name = "Speed", type = "A", banvl = 5)
 public class SpeedB extends Check {
 
-    private double lastDeltaXZ;
-    private float friction, getAIMoveSpeed;
+    private double lastDeltaXZ = -10;
+    private float friction = -10, getAIMoveSpeed = -10;
 
     /** Detecting speeds via Air Friction change, and Ground Friction change **/
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingInEvent) {
+        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
 
-            if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
-                    || user.generalCancel()
-                    || user.getBlockData().liquidTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
-                    || user.getMiscData().isNearBoat()) {
+            if (user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
                 return;
             }
 
@@ -73,6 +67,13 @@ public class SpeedB extends Check {
                 friction = 0.026F;
             }
 
+            if (user.getMovementData().isClientGround()) {
+                friction *= 1.3;
+
+                if (MathUtil.getMoveAngle(from, to) > 90)
+                    friction /= 1.05;
+            }
+
             if (f >= 1.0E-4F) {
                 f = (float) Math.sqrt(f);
                 if (f < 1.0F) {
@@ -89,20 +90,14 @@ public class SpeedB extends Check {
             }
 
             double difference = (deltaXZ - prediction) / friction;
-            difference -= 0.001;
 
             difference -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.2);
 
             DecimalFormat df2 = new DecimalFormat("0.00");
 
-            if (user.getMovementData().isClientGround()) {
-                if (difference > 0 && user.getConnectedTick() > 250) {
-                    if (violation++ > 2) {
-                        alert(user, false, "Difference -> " + difference);
-                    }
-                } else {
-                    violation -= Math.min(violation, 0.25);
-                }
+
+            if (difference > 0.0 && (deltaXZ / prediction) > 0.0) {
+                alert(user, false,"P -> " + df2.format(deltaXZ / prediction) + "%");
             }
 
             lastDeltaXZ = Math.max(deltaXZ, 0.1);

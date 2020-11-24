@@ -14,6 +14,8 @@ import org.bukkit.Bukkit;
 @CheckInfo(name = "Reach", type = "A", banvl = 5)
 public class ReachA extends Check {
 
+    private String string = "Yes I know this is skidded.";
+
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
@@ -63,7 +65,7 @@ public class ReachA extends Check {
                     double offsetZ = Math.cos(Math.toRadians(targetPitch)) * Math.cos(Math.toRadians(targetYaw)) *
                             Math.cos(Math.toRadians(playerPitch)) * Math.cos(Math.toRadians(playerYaw));
 
-                    double threshold = 3.04;
+                    double threshold = 3.1;
 
                     if (offsetX + offsetY + offsetZ > 0.4) {
                         threshold += 0.4;

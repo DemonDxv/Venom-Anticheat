@@ -17,11 +17,14 @@ public class BadPacketsD extends Check {
             double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
             if (user.generalCancel()
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
-                    || !user.isSafe()) {
+                    || !user.isSafe()
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
+                    || user.getBlockData().liquidTicks > 0
+                    || user.getVelocityData().getVelocityTicks() < 20) {
                 return;
             }
             if (deltaY != 0 && user.getConnectedTick() > 250) {
-                if (deltaY < 0.005 && deltaY > -0.005) {
+                if (deltaY < 0.001 && deltaY > -0.001) {
                     alert(user, false,"DY -> "+deltaY);
                 }
             }

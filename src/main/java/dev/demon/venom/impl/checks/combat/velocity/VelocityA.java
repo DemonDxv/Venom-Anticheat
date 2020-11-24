@@ -156,9 +156,9 @@ public class VelocityA extends Check {
             double fullVelocity = (deltaXZ / prediction);
 
 
-            if (user.getVelocityData().getVelocityTicks() == 1) {
+            if (user.getVelocityData().getVelocityTicks() == 1 && user.getConnectedTick() > 100) {
                 if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
-                    alert(user, false,"HV -> " + (deltaXZ / prediction) + "%");
+                    alert(user, true,"HV -> " + (deltaXZ / prediction) + "%");
                 }
                 lastVelocity = fullVelocity;
             }

@@ -5,21 +5,19 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
-import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
-@CheckInfo(name = "BadPackets", type = "W", banvl = 100)
-public class BadPacketsW extends Check {
+@CheckInfo(name = "BadPackets", type = "B1", banvl = 100)
+public class BadPacketsB1 extends Check {
 
-    private long lastPing, lastTransaction;
+    private long lastTransaction;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().getLastPing() >= 750) {
+            if (user.getLagProcessor().getLastTransaction() >= 750) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -27,17 +25,15 @@ public class BadPacketsW extends Check {
                     }
                 }.runTask(Venom.getInstance());
             }
-            long keepAlivePing = user.getLagProcessor().getCurrentPing();
             long transactionPing = user.getLagProcessor().getLastTransaction();
 
-            if (Math.abs(keepAlivePing - lastPing) == 0) {
+            if (Math.abs(transactionPing - lastTransaction) == 0) {
                 if (violation++ > 300) {
-                    alert(user, false, "PD -> "+Math.abs(keepAlivePing - lastPing) + " LKA -> "+user.getLagProcessor().getLastKeepAlive());
+                    alert(user, false, "PD -> " + Math.abs(transactionPing - lastTransaction) + " LT -> "+user.getLagProcessor().getLastTransaction());
                 }
             } else {
                 violation = 0;
             }
-            lastPing = keepAlivePing;
             lastTransaction = transactionPing;
         }
     }

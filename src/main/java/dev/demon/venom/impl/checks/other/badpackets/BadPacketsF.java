@@ -15,7 +15,9 @@ public class BadPacketsF extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof HeldItemSlotInEvent) {
             if (((HeldItemSlotInEvent) e).getSlot() == lastSlot) {
-                alert(user, false, "S -> "+((HeldItemSlotInEvent) e).getSlot() + " LS -> "+lastSlot);
+                if (user.getConnectedTick() > 100) {
+                    alert(user, false, "S -> " + ((HeldItemSlotInEvent) e).getSlot() + " LS -> " + lastSlot);
+                }
             }
             lastSlot = ((HeldItemSlotInEvent) e).getSlot();
         }

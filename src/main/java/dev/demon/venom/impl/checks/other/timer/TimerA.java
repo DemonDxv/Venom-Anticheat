@@ -18,7 +18,10 @@ public class TimerA extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
 
-            if ((user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L)) {
+            if (user.generalCancel()
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L) {
                 violation = 0;
                 return;
             }
@@ -34,13 +37,13 @@ public class TimerA extends Check {
 
                 double timerSpeed = 50.0 / timerRate.getAverage();
 
-                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.04 : 1.01;
+                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.06 : 1.01;
 
-                if (timerSpeed >= max) {
-                    if (violation++ > 3) {
+                if (timerSpeed >= max && user.getConnectedTick() > 100) {
+                    if (violation++ > 4) {
                         alert(user, false,"TS -> " + timerSpeed);
                     }
-                } else violation -= Math.min(violation, 0.5);
+                } else violation -= Math.min(violation, 0.45);
             }
             lastTimerMove = now;
         }

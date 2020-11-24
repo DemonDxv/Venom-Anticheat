@@ -22,6 +22,7 @@ public class VelocityProcessor {
     private User user;
     public double velocityX, velocityY, velocityZ, horizontal, vertical, horizontalTransaction, verticalTransaction;
     private boolean blocking;
+    public int ticksSinceVelocity;
     public HashMap<Double, Short> lastVelocityVertical = new HashMap(), lastVelocityHorizontal = new HashMap();
 
     public void update(Object packet, String type) {
@@ -37,6 +38,8 @@ public class VelocityProcessor {
 
                     user.getLagProcessor().setHitTime(System.currentTimeMillis());
 
+                    ticksSinceVelocity = 0;
+
 
                     user.getVelocityData().setLastVelocity(System.currentTimeMillis());
 
@@ -51,7 +54,7 @@ public class VelocityProcessor {
                     vertical = Math.pow(velocityY + 2.0, 2.0) * 5.0;
 
 
-                    if (user.getMovementData().isOnGround() && user.getPlayer().getLocation().getY() % 1.0 == 0.0) {
+                    if (user.getMovementData().isClientGround()) {
                         vertical = velocityY;
                     }
 
@@ -78,6 +81,7 @@ public class VelocityProcessor {
                     velocityX *= 0.6F;
                     velocityZ *= 0.6F;
                 }
+                ticksSinceVelocity++;
             }
 
             if (type.equalsIgnoreCase(Packet.Client.USE_ENTITY)) {

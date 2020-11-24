@@ -6,9 +6,10 @@ import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
-@CheckInfo(name = "Velocity", type = "F", banvl = 3)
-public class VelocityF extends Check {
+@CheckInfo(name = "Velocity", type = "G", banvl = 20)
+public class VelocityG extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
@@ -19,17 +20,11 @@ public class VelocityF extends Check {
                 return;
             }
 
-            double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
-
-            double ratio = Math.abs(deltaY / user.getVelocityProcessor().getVerticalTransaction());
-
-            if (user.getVelocityData().getVelocityTicks() == 1) {
-                if (deltaY == 0.0) {
-                    if (violation++ > 0) {
-                        alert(user, true, "VV -> " + ratio + "%");
-                    }
-                } else violation -= Math.min(violation, 0.25);
-            }
+            if (user.getVelocityData().getVelocityTicks() > user.getVelocityProcessor().ticksSinceVelocity) {
+                if (violation++ > 20) {
+                    alert(user, true, "Canceling Transactions");
+                }
+            } else violation -= Math.min(violation, 0.75);
         }
     }
 }

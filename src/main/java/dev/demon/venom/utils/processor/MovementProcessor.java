@@ -1,11 +1,13 @@
 package dev.demon.venom.utils.processor;
 
 import dev.demon.venom.Venom;
+import dev.demon.venom.api.tinyprotocol.api.NMSObject;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
+import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutEntityEffectPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutPositionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
@@ -84,6 +86,7 @@ public class MovementProcessor {
 
                 user.getMovementData().setLastCheckBlockTick(user.getConnectedTick());
 
+                user.getMovementData().setLastDig(System.currentTimeMillis());
 
                 user.getMovementData().setBreakingOrPlacingBlock(true);
                 user.getMovementData().setBreakingOrPlacingTime(System.currentTimeMillis());

@@ -4,53 +4,43 @@ import dev.demon.venom.api.check.Check;
 import dev.demon.venom.api.check.CheckInfo;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
-import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
 @CheckInfo(name = "Fly", type = "C", banvl = 10)
 public class FlyC extends Check {
 
     private double lastDeltaY;
-    private int airTicks;
-    private long lastPlace;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.generalCancel()
-                    || user.getBlockData().blockAboveTicks > 0
+
+            if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
+                    || user.generalCancel()
+                    || user.getBlockData().liquidTicks > 0
                     || user.getVelocityData().getVelocityTicks() < 20
-                    || !user.isSafe()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
+                    || user.getMiscData().isNearBoat()
+                    || user.getBlockData().climbableTicks > 0) {
                 return;
             }
 
-            CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
+            double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
 
-            double deltaY = to.getY() - from.getY();
+            double prediction = (lastDeltaY - 0.08D) * 0.9800000190734863D;
 
-            double prediction = deltaY - lastDeltaY;
-
-            if (!user.getMovementData().isOnGround()) {
-                airTicks++;
-
-                if (airTicks > 5) {
-                    if (prediction > (TimeUtils.elapsed(lastPlace) < 1000L ? 0.3 : 0.002) && user.getConnectedTick() > 100) {
-                        if (violation++ > 4) {
-                            alert(user, false, "P -> " + prediction);
-                        }
-                    } else violation -= Math.min(violation, 0.75);
-                }
-            } else {
-                airTicks = 0;
+            if (!user.getMovementData().isOnGround() && !user.getMovementData().isLastOnGround()) {
+                if ((deltaY - prediction) > 0.002 && user.getConnectedTick() > 150) {
+                    if (violation++ > 2) {
+                        alert(user, false, "CIY -> " + (deltaY - prediction));
+                    }
+                } else violation -= Math.min(violation, 0.75);
             }
 
-            lastDeltaY = (deltaY - 0.08D) * 0.9800000190734863D;
-        }
-        if (e instanceof BlockPlaceEvent) {
-            lastPlace = System.currentTimeMillis();
+            lastDeltaY = deltaY;
         }
     }
 }

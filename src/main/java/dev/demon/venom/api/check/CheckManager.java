@@ -15,14 +15,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CheckManager {
-    private static final Class[] checks = new Class[] {
+    public static final Class[] checks = new Class[] {
 
             //Combat
             AimAssistA.class,
             AimAssistB.class,
             AimAssistC.class,
-            AimAssistD.class,
-            AimAssistE.class,
+          //  AimAssistD.class,
+          //  AimAssistE.class,
 
             AutoClickerA.class,
             AutoClickerB.class,
@@ -49,18 +49,22 @@ public class CheckManager {
             ReachA.class,
 
             VelocityA.class,
-            VelocityB.class,
+          //  VelocityB.class,
             VelocityC.class,
             VelocityD.class,
             VelocityE.class,
-            VelocityF.class,
+        //    VelocityF.class,
+            VelocityG.class,
+          //  VelocityH.class,
 
             //Movement
             SpeedA.class,
+            SpeedB.class,
 
             FlyA.class,
             FlyB.class,
             FlyC.class,
+
 
 
             //Other
@@ -86,7 +90,13 @@ public class CheckManager {
           //  BadPacketsT.class,
             BadPacketsU.class,
             BadPacketsV.class,
-            BadPacketsW.class,
+        //    BadPacketsW.class,
+        //    BadPacketsX.class,
+            BadPacketsY.class,
+            BadPacketsZ.class,
+
+            BadPacketsA1.class,
+            BadPacketsB1.class,
 
             TimerA.class,
 

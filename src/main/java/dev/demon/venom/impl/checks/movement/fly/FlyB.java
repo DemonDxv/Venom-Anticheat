@@ -17,7 +17,12 @@ public class FlyB extends Check {
             if (user.generalCancel()
                     || user.getBlockData().blockAboveTicks > 0
                     || !user.isSafe()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
+                    || user.getMiscData().isNearBoat()
+                    || user.getBlockData().climbableTicks > 0
+                    || user.getBlockData().liquidTicks > 0) {
                 return;
             }
 

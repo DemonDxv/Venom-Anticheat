@@ -11,6 +11,7 @@ import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.command.CommandUtils;
 import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.location.CustomLocation;
+import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
@@ -212,6 +213,14 @@ public class MathUtil {
             flub += 360.0f;
         }
         return flub;
+    }
+
+    public static boolean isPost(long flying) {
+        return TimeUtils.elapsed(flying) < 5L;
+    }
+
+    public static boolean isPre(long flying) {
+        return TimeUtils.elapsed(flying) > 5L;
     }
 
 
