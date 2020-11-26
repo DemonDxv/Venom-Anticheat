@@ -155,6 +155,10 @@ public class MovementProcessor {
                 WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (short) -1, false);
                 TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
+
+                user.getOldProcessors().updateOldPrediction();
+
+
                 if (user.getPlayer().isDead()) {
                     user.getMiscData().setDead(true);
                     user.getMiscData().setLastDeadTick(user.getConnectedTick());
@@ -259,6 +263,7 @@ public class MovementProcessor {
                     PlayerLocation lastLocation = user.getMovementData().getLocation();
                     PlayerLocation lastLocation2 = user.getMovementData().getPreviousLocation();
 
+
                     if (user.isSafe() && user.getBoundingBox() != null) {
 
                         this.updateBlockCheck();
@@ -323,7 +328,6 @@ public class MovementProcessor {
 
                     user.setBoundingBox(new BoundingBox((badVector ? user.getMovementData().getTo().toVector() : user.getMovementData().getFrom().toVector()), user.getMovementData().getTo().toVector()).grow(0.3f, 0, 0.3f).add(0, 0, 0, 0, 1.84f, 0));
 
-                    user.getOldProcessors().updateOldPrediction();
 
                     if (wrappedInFlyingPacket.isLook()) {
 
@@ -435,7 +439,6 @@ public class MovementProcessor {
 
         if (user.getMovementData().getTo() != null && user.getMovementData().getFrom() != null) {
 
-
             //Credit: Dawson
 
             lastDeltaPitch = pitchDelta;
@@ -484,6 +487,7 @@ public class MovementProcessor {
 
                 user.getOptifineProcessor().updateNew(user);
             }
+
         }
     }
 }

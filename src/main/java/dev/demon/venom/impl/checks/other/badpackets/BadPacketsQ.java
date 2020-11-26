@@ -25,7 +25,8 @@ public class BadPacketsQ extends Check {
 
                 if (TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
                         || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                        || user.getBlockData().climbableTicks > 0) {
+                        || user.getBlockData().climbableTicks > 0
+                        || user.getBlockData().blockAboveTicks > 0) {
                     return;
                 }
 

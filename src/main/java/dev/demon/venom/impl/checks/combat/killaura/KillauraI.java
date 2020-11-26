@@ -21,6 +21,11 @@ public class KillauraI extends Check {
 
                 double fix = (deltaYaw - user.getOldProcessors().getMouseX());
 
+                double clientSens = user.getOldProcessors().getMouseX();
+
+                if (clientSens > 100000) {
+                    alert(user, false, "Head Snapping");
+                }
 
                 if (deltaYaw > 0.0 && fix > 60.0) {
                     double snap = Math.abs(deltaYaw - fix);

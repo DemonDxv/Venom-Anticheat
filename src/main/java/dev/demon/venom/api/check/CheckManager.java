@@ -45,6 +45,7 @@ public class CheckManager {
             KillauraG.class,
             KillauraH.class,
             KillauraI.class,
+            KillauraJ.class,
 
             ReachA.class,
 

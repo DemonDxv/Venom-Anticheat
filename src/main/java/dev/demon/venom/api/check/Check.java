@@ -37,6 +37,10 @@ public abstract class Check implements AnticheatListener {
 
     public abstract void onHandle(User user, AnticheatEvent e);
 
+    protected void silentAlert(User user, String message) {
+        user.getPlayer().sendMessage(ChatColor.RED+"[Alert] -> " + ChatColor.WHITE + message + " [Message is hidden]");
+    }
+
     protected void alert(User user, boolean experimental, String... strings) {
 
         if (user.isConnectedTickFix()) {
