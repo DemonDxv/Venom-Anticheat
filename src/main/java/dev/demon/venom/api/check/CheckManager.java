@@ -64,6 +64,7 @@ public class CheckManager {
             FlyA.class,
             FlyB.class,
             FlyC.class,
+            FlyD.class,
 
 
 
@@ -74,7 +75,7 @@ public class CheckManager {
             BadPacketsD.class,
             BadPacketsE.class,
             BadPacketsF.class,
-            BadPacketsG.class,
+        //    BadPacketsG.class,
             BadPacketsH.class,
             BadPacketsI.class,
             BadPacketsJ.class,
@@ -97,6 +98,10 @@ public class CheckManager {
 
             BadPacketsA1.class,
             BadPacketsB1.class,
+            BadPacketsC1.class,
+            BadPacketsD1.class,
+            BadPacketsE1.class,
+            BadPacketsF1.class,
 
             TimerA.class,
 

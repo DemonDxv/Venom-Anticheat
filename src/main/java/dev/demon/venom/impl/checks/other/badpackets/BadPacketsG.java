@@ -19,7 +19,7 @@ public class BadPacketsG extends Check {
             if (((CloseWindowInEvent) e).getId() == lastID) {
                 ticks++;
 
-                if (ticks >= 2) {
+                if (ticks >= 2 ) {
                     alert(user, false, "T -> "+ticks);
                 }
             }

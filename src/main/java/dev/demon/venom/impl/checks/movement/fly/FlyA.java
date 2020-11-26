@@ -7,6 +7,7 @@ import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
 @CheckInfo(name = "Fly", type = "A", banvl = 10)
 public class FlyA extends Check {
@@ -14,6 +15,7 @@ public class FlyA extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
+
             if (user.generalCancel()
                     || user.getBlockData().blockAboveTicks > 0
                     || user.getVelocityData().getVelocityTicks() < 20
@@ -31,7 +33,9 @@ public class FlyA extends Check {
 
             double max = 0.42f + user.getMiscData().getJumpPotionMultiplyer() * 0.2;
 
-            if (user.getBlockData().wallTicks > 0 || user.getBlockData().fenceTicks > 0 || user.getBlockData().halfBlockTicks > 0) {
+            if (user.getBlockData().wallTicks > 0 || user.getBlockData().slabTicks > 0
+                    || user.getBlockData().fenceTicks > 0 || user.getBlockData().halfBlockTicks > 0
+                    || user.getBlockData().stairTicks > 0) {
                 max = 0.5;
             }
             if (user.getBlockData().bedTicks > 0) {

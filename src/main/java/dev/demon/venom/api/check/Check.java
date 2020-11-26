@@ -63,10 +63,9 @@ public abstract class Check implements AnticheatListener {
             if (dataStr.length() > 0) {
                 textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + dataStr.toString()).create()));
             }
-
-            Venom.getInstance().getUserManager().getUsers().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().spigot().sendMessage(textComponent));
+            Venom.getInstance().getUserManager().userMapToList().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().spigot().sendMessage(textComponent));
         } else if (!user.isBanned()) {
-            Venom.getInstance().getUserManager().getUsers().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().sendMessage(alert));
+            Venom.getInstance().getUserManager().userMapToList().stream().parallel().filter(staff -> (staff.getPlayer().hasPermission(Venom.permissionAlert) && staff.isAlerts())).forEach(staff -> staff.getPlayer().sendMessage(alert));
         }
 
         if (Venom.banEnabled && user.getVL(this) >= getBanVL() && !user.isBanned() && !experimental) {

@@ -152,7 +152,7 @@ public class MovementProcessor {
             if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
 
-                WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (byte) -1, false);
+                WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (short) -1, false);
                 TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
                 if (user.getPlayer().isDead()) {
@@ -219,6 +219,7 @@ public class MovementProcessor {
                 user.getCombatData().setTransactionHits(user.getCombatData().getTransactionHits() + 1);
 
                 user.getVelocityData().setVelocityTicks(user.getVelocityData().getVelocityTicks() + 1);
+                user.getVelocityProcessor().setTicksSinceVelocity(user.getVelocityProcessor().getTicksSinceVelocity() + 1);
 
                 if (user.getMovementData().isJumpPad()) {
                     if ((System.currentTimeMillis() - user.getMovementData().getLastJumpPadSet()) > 230L && user.getMovementData().isOnGround() && user.getMovementData().isLastOnGround()) {

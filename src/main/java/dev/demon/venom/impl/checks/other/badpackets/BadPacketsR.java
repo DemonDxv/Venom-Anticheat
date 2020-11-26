@@ -19,12 +19,6 @@ public class BadPacketsR extends Check {
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L) {
                 return;
             }
-            if (user.getMovementData().isClientGround() && user.getMovementData().isClientGround() && !user.getMovementData().isOnGround() && user.getConnectedTick() > 250) {
-                if (violation++ > 0.0) {
-                    alert(user, false, "Spoofing Client Ground");
-                }
-            } else violation -= Math.min(violation, 0.5);
-
         }
     }
 }

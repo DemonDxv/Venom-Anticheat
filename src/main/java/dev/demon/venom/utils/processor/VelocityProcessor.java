@@ -33,9 +33,6 @@ public class VelocityProcessor {
                 if (wrappedOutVelocityPacket.getId() == user.getPlayer().getEntityId()) {
 
 
-                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
-                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
-
                     user.getLagProcessor().setHitTime(System.currentTimeMillis());
 
                     ticksSinceVelocity = 0;
@@ -60,6 +57,8 @@ public class VelocityProcessor {
 
                     user.getCombatData().setLastVelocitySqr((Math.sqrt(velocityX * velocityX + velocityZ * velocityZ) * 0.2));
 
+                    WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionIDVelocity(), false);
+                    TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
                 }
             }
@@ -81,7 +80,6 @@ public class VelocityProcessor {
                     velocityX *= 0.6F;
                     velocityZ *= 0.6F;
                 }
-                ticksSinceVelocity++;
             }
 
             if (type.equalsIgnoreCase(Packet.Client.USE_ENTITY)) {
@@ -104,9 +102,10 @@ public class VelocityProcessor {
 
                 if (id == currentIDVelocity) {
                     user.getLagProcessor().setVelocityPing((System.currentTimeMillis() - user.getLagProcessor().getHitTime()));
-                    lastVelocityHorizontal.put(horizontal, currentIDVelocity);
+                    lastVelocityHorizontal.put(MathUtil.hypot(velocityX, velocityZ), currentIDVelocity);
                     lastVelocityVertical.put(vertical, currentIDVelocity);
                     user.getVelocityData().setVelocityTicks(0);
+                    ticksSinceVelocity = 100;
                 }
             }
         }

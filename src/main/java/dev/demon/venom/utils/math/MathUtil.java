@@ -194,6 +194,10 @@ public class MathUtil {
         return variance;
     }
 
+    public static float getBaseSpeed(Player player) {
+        return 0.26f + (getPotionEffectLevel(player, PotionEffectType.SPEED) * 0.062f) + ((player.getWalkSpeed() - 0.2f) * 1.6f);
+    }
+
 
     public static int getPotionEffectLevel(Player player, PotionEffectType pet) {
         for (PotionEffect pe : player.getActivePotionEffects()) {

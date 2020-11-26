@@ -28,8 +28,7 @@ public class VelocityA extends Check {
         if (e instanceof FlyingInEvent) {
 
 
-            if (user.getVelocityData().getVelocityTicks() < 5) {
-
+            if (user.getVelocityData().getVelocityTicks() == 1) {
                 for (Map.Entry<Double, Short> doubleShortEntry : user.getVelocityProcessor().getLastVelocityHorizontal().entrySet()) {
 
                     if (user.getMiscData().getTransactionIDVelocity() == doubleShortEntry.getValue()) {
@@ -51,6 +50,7 @@ public class VelocityA extends Check {
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
 
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
+            double deltaY = to.getY() - from.getY();
 
 
             double velocity = Math.hypot(user.getVelocityProcessor().velocityX, user.getVelocityProcessor().velocityZ);
@@ -157,7 +157,7 @@ public class VelocityA extends Check {
 
 
             if (user.getVelocityData().getVelocityTicks() == 1 && user.getConnectedTick() > 100) {
-                if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround() && deltaY > 0.42f) {
                     alert(user, true,"HV -> " + (deltaXZ / prediction) + "%");
                 }
                 lastVelocity = fullVelocity;

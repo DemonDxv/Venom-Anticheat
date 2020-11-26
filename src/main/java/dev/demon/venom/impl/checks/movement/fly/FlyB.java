@@ -27,9 +27,11 @@ public class FlyB extends Check {
             }
 
             boolean posYground = user.getMovementData().getTo().getY() % 0.015625 == 0.0;
+
             boolean clientGround = user.getMovementData().isClientGround();
 
-            boolean hasVal = hasValue(user.getMovementData().getTo().getY());
+            boolean hasVal = hasValue(user.getMovementData().getTo().getY())
+                    || hasValue(user.getMovementData().getFrom().getY());
 
             if (hasVal) {
                 if (user.getBlockData().chestTicks > 0
@@ -39,14 +41,17 @@ public class FlyB extends Check {
                         || user.getBlockData().slabTicks > 0
                         || user.getBlockData().fenceTicks > 0
                         || user.getBlockData().soulSandTicks > 0
+                        || user.getBlockData().halfBlockTicks > 0
                         || user.getBlockData().snowTicks > 0) {
                     return;
                 }
             }
 
             if (!clientGround && posYground && user.getConnectedTick() > 100) {
-                alert(user, false, "Spoofing off ground");
-            }
+                if (violation++ > 1) {
+                    alert(user, false, "Spoofing off ground");
+                }
+            } else violation -= Math.min(violation, 0.125);
         }
     }
 

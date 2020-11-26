@@ -18,6 +18,7 @@ public class SpeedB extends Check {
 
     private double lastDeltaXZ;
     private float friction, getAIMoveSpeed;
+    private float friction2 = 0.91F;
 
     /** Detecting speeds via Air Friction change, and Ground Friction change **/
 
@@ -39,8 +40,14 @@ public class SpeedB extends Check {
 
             double prediction = lastDeltaXZ * 0.91F;
 
+            friction2 = 0.91F;
+
             if (user.getMovementData().getClientGroundTicks() > 4) {
                 prediction *= 0.6F;
+            }
+
+            if (user.getBlockData().iceTicks > 0) {
+                friction2 = 0.6F;
             }
 
             if (!user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
@@ -58,7 +65,7 @@ public class SpeedB extends Check {
             float strafe = 0.98F, forward = 0.98F;
             float f = strafe * strafe + forward * forward;
 
-            float var3 = (0.6F * 0.91F);
+            float var3 = (0.6F * friction2);
             getAIMoveSpeed = 0.1F;
 
             if (user.getMovementData().isSprinting()) {

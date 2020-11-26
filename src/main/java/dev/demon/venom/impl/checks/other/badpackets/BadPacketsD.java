@@ -25,8 +25,10 @@ public class BadPacketsD extends Check {
             }
             if (deltaY != 0 && user.getConnectedTick() > 250) {
                 if (deltaY < 0.001 && deltaY > -0.001) {
-                    alert(user, false,"DY -> "+deltaY);
-                }
+                    if (violation++ > 5) {
+                        alert(user, false, "DY -> " + deltaY);
+                    }
+                } else violation -= Math.min(violation, 0.5);
             }
         }
     }

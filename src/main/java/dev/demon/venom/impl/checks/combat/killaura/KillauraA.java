@@ -26,7 +26,7 @@ public class KillauraA extends Check {
 
             if (TimeUtils.elapsed(lastFlying) < 5L) {
                 if (violation++ > 10) {
-                    alert(user,false);
+                    alert(user,false, "Post Aura");
                 }
             } else violation -= Math.min(violation, 1);
         }
