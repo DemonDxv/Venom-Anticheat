@@ -18,14 +18,18 @@ public class BadPacketsD1 extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
+            if (user.getLagProcessor().isLagging() || user.getLagProcessor().getLastPingDiff() > 100) {
+                lastFlying = 1000L;
+            }
             lastFlying = System.currentTimeMillis();
         }
         if (e instanceof BlockPlaceEvent) {
-
             if (((BlockPlaceEvent) e).getItemStack().getType().isBlock()) {
                 if (MathUtil.isPost(lastFlying)) {
-                    alert(user, true, "Sent block blacement packet late");
-                }
+                    if (violation++ > 10) {
+                        alert(user, true, "Sent block blacement packet late");
+                    }
+                } else violation = 0;
             }
         }
     }

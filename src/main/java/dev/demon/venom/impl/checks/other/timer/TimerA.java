@@ -21,7 +21,8 @@ public class TimerA extends Check {
             if (user.generalCancel()
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
-                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
+                && !user.isSafe()) {
                 violation = 0;
                 return;
             }
@@ -37,7 +38,7 @@ public class TimerA extends Check {
 
                 double timerSpeed = 50.0 / timerRate.getAverage();
 
-                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.06 : 1.01;
+                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.1 : 1.03;
 
                 if (timerSpeed >= max && user.getConnectedTick() > 100) {
                     if (violation++ > 4) {

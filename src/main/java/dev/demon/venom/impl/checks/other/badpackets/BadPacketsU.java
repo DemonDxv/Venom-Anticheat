@@ -23,7 +23,7 @@ public class BadPacketsU extends Check {
                 violation = 0;
                 return;
             }
-            if (TimeUtils.elapsed(lastDig) <= 5L) {
+            if (TimeUtils.elapsed(lastDig) <= 5L && user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
                 if (violation++ > 5) {
                     alert(user, false, "Spamming Dig Packets");
                 }

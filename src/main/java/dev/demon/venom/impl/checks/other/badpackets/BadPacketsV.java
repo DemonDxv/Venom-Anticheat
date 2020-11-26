@@ -23,7 +23,7 @@ public class BadPacketsV extends Check {
                 violation = 0;
                 return;
             }
-            if (TimeUtils.elapsed(lastPlace) <= 5L) {
+            if (TimeUtils.elapsed(lastPlace) <= 5L && user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
                 if (violation++ > 5) {
                     alert(user, false, "Spamming Block Place Packets");
                 }
