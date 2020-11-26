@@ -22,27 +22,29 @@ public class AimAssistA extends Check {
                 return;
             }
 
-            if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() > 2000L) || user.isUsingNewOptifine()) violation = 0;
+            if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() > 2000L) || user.isUsingNewOptifine()) {
+                violation = 0;
+                return;
+            }
 
             double diff = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
 
             long gcd = MathUtil.gcd((long) (diff * offset), (long) (lastDiff * offset));
 
 
-            if (user.getMovementData().getTo().getYaw() != user.getMovementData().getFrom().getYaw()
-                    && user.getMovementData().getTo().getPitch() != user.getMovementData().getFrom().getPitch()) {
-                if (diff > 0 && Math.abs(user.getMovementData().getTo().getPitch()) != 90.0) {
+            if (((user.getMovementData().getTo().getYaw() != user.getMovementData().getFrom().getYaw()) && (user.getMovementData().getTo().getPitch() != user.getMovementData().getFrom().getPitch()))) {
+                if (Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch()) > 0.0 && Math.abs(user.getMovementData().getTo().getPitch()) != 90.0f) {
                     if ((System.currentTimeMillis() - user.getCombatData().getLastUseEntityPacket() < 100L)) {
                         if (gcd < 131072L) {
-                            if (violation < 25) violation+=2;
-                        }else {
+                            if (violation < 50) violation += 2;
+                        } else {
                             if (violation > 0) violation--;
                         }
                     }
                 }
             }
-            if (violation >= 20) {
-                alert(user, false);
+            if (violation >= 36) {
+                alert(user, false, "GCD Modification");
             }
             lastDiff = diff;
         }
