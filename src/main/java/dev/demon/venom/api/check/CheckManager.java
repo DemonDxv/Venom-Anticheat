@@ -1,5 +1,6 @@
 package dev.demon.venom.api.check;
 
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.checks.combat.aimassist.*;
 import dev.demon.venom.impl.checks.combat.autoclicker.*;
 import dev.demon.venom.impl.checks.combat.killaura.*;
@@ -9,12 +10,18 @@ import dev.demon.venom.impl.checks.movement.fly.*;
 import dev.demon.venom.impl.checks.movement.speed.*;
 import dev.demon.venom.impl.checks.other.badpackets.*;
 import dev.demon.venom.impl.checks.other.timer.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.Bukkit;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class CheckManager {
+
     public static final Class[] checks = new Class[] {
 
             //Combat
@@ -108,9 +115,9 @@ public class CheckManager {
             BadPacketsG1.class,
 
             TimerA.class,
-
-
     };
+
+
 
     public static List<Check> loadChecks() {
         List<Check> checklist = new ArrayList<>();
@@ -121,10 +128,39 @@ public class CheckManager {
                 e.printStackTrace();
             }
         });
+
         return checklist;
+    }
+
+    public static void updateCheckFreezeState(CheckData checkData) {
+        String name = checkData.getName();
+        String type = checkData.getType();
+
+        if (checkData.getUser() != null) {
+            Check fondCheck = checkData.getUser().getChecks().parallelStream().filter(check ->
+                    check.getName().equalsIgnoreCase(name)
+                    && check.getType().equalsIgnoreCase(type)).findAny().orElse(null);
+
+            assert fondCheck != null;
+            fondCheck.freeze = checkData.freeze;
+        }
+    }
+
+    public <T> Check forClass(Class<? extends Check> aClass, User user) {
+        return (Check) user.getChecks().stream()
+                .filter(module -> module.getClass().equals(aClass)).findFirst()
+                .orElse(null);
     }
 
     public static CheckInfo getCheckInfo(Check check) {
         return check.getClass().getAnnotation(CheckInfo.class);
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class CheckData {
+        private String name, type;
+        private boolean freeze;
+        private User user;
     }
 }
