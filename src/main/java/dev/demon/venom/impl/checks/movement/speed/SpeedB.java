@@ -101,15 +101,19 @@ public class SpeedB extends Check {
 
             difference -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.2);
 
+            if (user.getBlockData().pistionTick > 0) {
+                difference -= 0.8;
+            }
+
             DecimalFormat df2 = new DecimalFormat("0.00");
 
-            if (user.getMovementData().isClientGround()) {
+            if (user.getMovementData().isClientGround() || user.getMovementData().isLastClientGround()) {
                 if (difference > 0 && user.getConnectedTick() > 250) {
-                    if (violation++ > 2) {
+                    if (violation++ > 1) {
                         alert(user, false, "Difference -> " + difference);
                     }
                 } else {
-                    violation -= Math.min(violation, 0.25);
+                    violation -= Math.min(violation, 0.05);
                 }
             }
 

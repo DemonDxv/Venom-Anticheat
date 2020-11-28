@@ -15,9 +15,10 @@ public class CommandManager {
 
     public CommandManager() {
         addCommand(new Command(new MainCommand("venom"), "venom", null, "Main command.", true));
-        addCommand(new Command(new MainCommand("venom"), "venom info", "/Venom info <player>", "Information command.", true));
-        addCommand(new Command(new MainCommand("venom"), "venom alerts", "/Venom alerts", "Alerts command.", true));
-        addCommand(new Command(new MainCommand("venom"), "venom check", "/Venom check <player>", "[New]", true));
+        addCommand(new Command(new MainCommand("venom"), "venom info", "/Venom info <player>", "Shows information about a player.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom alerts", "/Venom alerts", "Toggle on, and off alerts.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom check", "/Venom check <player>", "Shows development info about selected player.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom bans", "/Venom bans", "Toggle on, and off bans.", true));
     }
 
     private void addCommand(Command... commands) {

@@ -31,7 +31,8 @@ public class FlyA extends Check {
                     || user.getBlockData().webTicks > 0
                     || TimeUtils.elapsed(user.getCombatData().getLastFireDamage()) < 1000L
                     || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 1000L) {
                 return;
             }
 

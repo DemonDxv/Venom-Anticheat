@@ -41,9 +41,9 @@ public class FlyC extends Check {
             if (!user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround()) {
                 if ((deltaY - prediction) > 0.002 && user.getConnectedTick() > 150) {
                     if (violation++ > 2) {
-                        alert(user, false, "CIY -> " + (deltaY - prediction));
+                        alert(user, false, "Prediction -> " + (deltaY - prediction));
                     }
-                } else violation -= Math.min(violation, 0.75);
+                } else violation -= Math.min(violation, 0.02);
             }
 
             lastDeltaY = deltaY;

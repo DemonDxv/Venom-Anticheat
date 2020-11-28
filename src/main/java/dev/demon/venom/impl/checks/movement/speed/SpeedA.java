@@ -26,7 +26,8 @@ public class SpeedA extends Check {
                     || user.getBlockData().liquidTicks > 0
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L
+                    || user.getBlockData().webTicks > 0) {
                 return;
             }
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
@@ -55,11 +56,11 @@ public class SpeedA extends Check {
 
             if (!user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround() && user.getConnectedTick() > 100) {
                 if (difference > 0) {
-                    if (violation++ > 2) {
+                    if (violation++ > 1) {
                         alert(user, false, "Difference -> " + difference);
                     }
                 } else {
-                    violation -= Math.min(violation, 0.25);
+                    violation -= Math.min(violation, 0.05);
                 }
             }
             lastDeltaXZ = deltaXZ;
