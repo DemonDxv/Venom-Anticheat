@@ -108,7 +108,8 @@ public class PacketListener implements AnticheatListener {
 
 
             AnticheatEvent finalEvent = event;
-            user.checks.stream().filter(check -> check.enabled).forEach(check -> check.onHandle(user, finalEvent));
+            user.checks.stream().filter(check -> check.enabled
+                    && !check.freeze).forEach(check -> check.onHandle(user, finalEvent));
         }
     }
 }

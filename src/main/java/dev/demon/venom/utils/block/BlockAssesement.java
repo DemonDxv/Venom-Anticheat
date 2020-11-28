@@ -9,6 +9,7 @@ import dev.demon.venom.utils.version.VersionUtil;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -27,7 +28,7 @@ public class BlockAssesement {
 
     private User user;
     private BoundingBox boundingBox;
-    private boolean cactus, enchantmentTable, nearWallCombat, inBlock, testGround, ironBar, collidesHorizontallyStrick, presurePlate, enderFrame, bed, leaves, chest, trapDoor, hopper, lillyPad, anvil, collidedGround, door, halfGlass, liquidGround, onGround, collidesVertically, collidesHorizontally, soulSand, snow, onIce, onNearIce, blockAbove, stair, slab, pistion, climbale, groundSlime, web, chests, halfblock, liquid, wall, carpet, stairSlabs, slime, fence, rail;
+    private boolean cactus, redstone, enchantmentTable, nearWallCombat, inBlock, testGround, ironBar, collidesHorizontallyStrick, presurePlate, enderFrame, bed, leaves, chest, trapDoor, hopper, lillyPad, anvil, collidedGround, door, halfGlass, liquidGround, onGround, collidesVertically, collidesHorizontally, soulSand, snow, onIce, onNearIce, blockAbove, stair, slab, pistion, climbale, groundSlime, web, chests, halfblock, liquid, wall, carpet, stairSlabs, slime, fence, rail;
 
     private int lastNoneNullblock = 0;
 
@@ -117,6 +118,12 @@ public class BlockAssesement {
                 || bb.collidesVertically(boundingBox.subtract(0, 0.2f, 0, 0, 0, 0)))) {
 
             onGround = true;
+        }
+
+
+
+        if (block.getType() == Material.REDSTONE_WIRE) {
+            redstone = true;
         }
 
         if (block != null) {
@@ -368,11 +375,6 @@ public class BlockAssesement {
                     break;
                 }
 
-
-           /*     case REDSTONE_WIRE: {
-                    redstoneDust = true;
-                    break;
-                }*/
 
                 case LONG_GRASS:
              /*    case DOUBLE_PLANT: {

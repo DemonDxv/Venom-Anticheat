@@ -24,10 +24,13 @@ public class SpeedA extends Check {
                     || user.generalCancel()
                     || user.getBlockData().climbableTicks > 0
                     || user.getBlockData().liquidTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastBlockPlaceTick()) < 1000L
                     || user.getMiscData().isNearBoat()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L
-                    || user.getBlockData().webTicks > 0) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
+                    || user.getBlockData().webTicks > 0
+                    || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 1000L
+                    || user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 2000L) {
                 return;
             }
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
@@ -49,6 +52,14 @@ public class SpeedA extends Check {
 
             if (user.getBlockData().pistionTick > 0) {
                 prediction += 0.8;
+            }
+
+            if (user.getBlockData().redstoneTick > 0 || user.getBlockData().carpetTick > 0 || user.getBlockData().presurePlateTicks > 0) {
+                prediction += 0.36;
+            }
+
+            if (user.getBlockData().doorTicks > 0) {
+                prediction += 0.5;
             }
 
 

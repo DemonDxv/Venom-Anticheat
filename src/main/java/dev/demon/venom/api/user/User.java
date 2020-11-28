@@ -446,11 +446,22 @@ public class User {
         }
 
         if (blockAssesement.isLiquid()) {
-            if (blockData.liquidTicks < 100) blockData.liquidTicks++;
+            if (blockData.liquidTicks < 20) blockData.liquidTicks++;
         } else {
             if (blockData.liquidTicks > 0) blockData.liquidTicks--;
         }
 
+        if (blockAssesement.isCarpet()) {
+            if (blockData.carpetTick < 20) blockData.carpetTick++;
+        } else {
+            if (blockData.carpetTick > 0) blockData.carpetTick--;
+        }
+
+        if (blockAssesement.isRedstone()) {
+            if (blockData.redstoneTick < 20) blockData.redstoneTick+=2;
+        } else {
+            if (blockData.redstoneTick > 0) blockData.redstoneTick--;
+        }
 
         getBlockData().ice = blockAssesement.isOnIce();
 

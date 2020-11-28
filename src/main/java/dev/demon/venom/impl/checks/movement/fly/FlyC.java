@@ -21,14 +21,15 @@ public class FlyC extends Check {
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
                     || user.generalCancel()
                     || user.getBlockData().liquidTicks > 0
-                    || user.getVelocityData().getVelocityTicks() < 20
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
                     || user.getBlockData().climbableTicks > 0
                     || user.getMiscData().getMountedTicks() > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
+                    || user.getBlockData().doorTicks > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 2000L
                     || user.getBlockData().webTicks > 0
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L
+                    || user.getBlockData().bedTicks > 0
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
                     || TimeUtils.elapsed(user.getMovementData().getLastExplode()) < 1000L) {
 
                 return;
@@ -38,12 +39,21 @@ public class FlyC extends Check {
 
             double prediction = (lastDeltaY - 0.08D) * 0.9800000190734863D;
 
+            if (user.getBlockData().doorTicks > 0) {
+                prediction += 1;
+            }
+
+            if (user.getVelocityData().getVelocityTicks() < 20 || user.getBlockData().redstoneTick > 0 || user.getBlockData().pistionTick > 0) {
+                prediction += 1;
+            }
+
+
             if (!user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround()) {
                 if ((deltaY - prediction) > 0.002 && user.getConnectedTick() > 150) {
                     if (violation++ > 2) {
                         alert(user, false, "Prediction -> " + (deltaY - prediction));
                     }
-                } else violation -= Math.min(violation, 0.02);
+                } else violation -= Math.min(violation, 0.1);
             }
 
             lastDeltaY = deltaY;

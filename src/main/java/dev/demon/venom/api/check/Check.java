@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public abstract class Check implements AnticheatListener {
 
     public double violation;
-    public boolean enabled, ban;
+    public boolean enabled, ban, freeze;
 
     private boolean isTestServer = false;
 
@@ -38,12 +38,13 @@ public abstract class Check implements AnticheatListener {
     public abstract void onHandle(User user, AnticheatEvent e);
 
     protected void silentAlert(User user, String message) {
+        if (this.freeze) return;
         user.getPlayer().sendMessage(ChatColor.RED+"[Alert] -> " + ChatColor.WHITE + message + " [Message is hidden]");
     }
 
     protected void alert(User user, boolean experimental, String... strings) {
 
-        if (user.isConnectedTickFix()) {
+        if (user.isConnectedTickFix() || this.freeze) {
             return;
         }
 

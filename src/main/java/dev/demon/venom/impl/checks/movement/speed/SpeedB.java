@@ -32,7 +32,8 @@ public class SpeedB extends Check {
                     || user.getBlockData().liquidTicks > 0
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 1000L) {
                 return;
             }
 

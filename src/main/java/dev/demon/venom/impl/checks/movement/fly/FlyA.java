@@ -26,13 +26,15 @@ public class FlyA extends Check {
                     || user.getMiscData().isNearBoat()
                     || user.getBlockData().climbableTicks > 0
                     || user.getBlockData().liquidTicks > 0
+                    || user.getBlockData().doorTicks > 0
+                    || user.getBlockData().bedTicks > 0
                     || user.getMiscData().getMountedTicks() > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 2000L
                     || user.getBlockData().webTicks > 0
                     || TimeUtils.elapsed(user.getCombatData().getLastFireDamage()) < 1000L
                     || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
-                    || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 1000L) {
+                    || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 2000L) {
                 return;
             }
 

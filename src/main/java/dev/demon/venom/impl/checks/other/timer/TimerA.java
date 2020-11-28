@@ -23,7 +23,8 @@ public class TimerA extends Check {
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                    ||  TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 5000L
+                    || user.getBlockData().bedTicks > 0) {
                 violation = 0;
                 return;
             }

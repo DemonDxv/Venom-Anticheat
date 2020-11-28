@@ -16,9 +16,11 @@ public class BadPacketsP extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof SteerVehicleInEvent) {
-            if (TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L) {
-                return;
-            }
+             if (user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 2000L) {
+                 violation = 0;
+                 return;
+             }
             if (!user.getPlayer().isInsideVehicle()) {
                 if (violation++ > 10) {
                     alert(user, false, "Spoofing not in a vehicle");

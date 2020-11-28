@@ -29,6 +29,7 @@ public class BadPacketsQ extends Check {
                         || user.getBlockData().blockAboveTicks > 0
                         || user.getBlockData().stairTicks > 0
                         || user.getBlockData().slabTicks > 0
+                        || user.getBlockData().bedTicks > 0
                         || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
                     return;
                 }
