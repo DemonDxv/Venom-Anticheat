@@ -1,10 +1,7 @@
 package dev.demon.venom.impl.command.commands;
 
 import dev.demon.venom.Venom;
-import dev.demon.venom.impl.command.commands.sub.AlertsCommand;
-import dev.demon.venom.impl.command.commands.sub.BansCommand;
-import dev.demon.venom.impl.command.commands.sub.CheckCommand;
-import dev.demon.venom.impl.command.commands.sub.InformationCommand;
+import dev.demon.venom.impl.command.commands.sub.*;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -22,7 +19,9 @@ public class MainCommand extends BukkitCommand {
     private InformationCommand informationCommand = new InformationCommand();
     private AlertsCommand alertsCommand = new AlertsCommand();
     private CheckCommand checkCommand = new CheckCommand();
+    private ChecksCommand checksCommand = new ChecksCommand();
     private BansCommand bansCommand = new BansCommand();
+
 
     public MainCommand(String name) {
         super(name);
@@ -61,9 +60,12 @@ public class MainCommand extends BukkitCommand {
                     } else if (s.equalsIgnoreCase("check")) {
                         found = true;
                         checkCommand.execute(args, s, commandSender);
-                    }else if (s.equalsIgnoreCase("bans")) {
+                    } else if (s.equalsIgnoreCase("bans")) {
                         found = true;
                         bansCommand.execute(args, s, commandSender);
+                    } else if (s.equalsIgnoreCase("checks")) {
+                        found = true;
+                        checksCommand.execute(args, s, commandSender);
                     }
 
                     if (!found) commandSender.sendMessage(ChatColor.RED + "Sub command doesn't exist!");
