@@ -16,6 +16,7 @@ import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.math.Verbose;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,31 +32,33 @@ public class KillauraC extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                List<BoundingBox> boundingBoxList = new ArrayList<>();
-                List<CustomLocation> pastLocation = hitBoxPastLocations.getEstimatedLocation(user.getLagProcessor().getLastTransaction(), Math.abs(user.getLagProcessor().getLastTransaction() - user.getLagProcessor().getLastLastTransaction()) + 200);
-                if (pastLocation.size() > 0) {
+                if (((UseEntityEvent) e).getEntity() instanceof Player) {
+                    List<BoundingBox> boundingBoxList = new ArrayList<>();
+                    List<CustomLocation> pastLocation = hitBoxPastLocations.getEstimatedLocation(user.getLagProcessor().getLastTransaction(), Math.abs(user.getLagProcessor().getLastTransaction() - user.getLagProcessor().getLastLastTransaction()) + 200);
+                    if (pastLocation.size() > 0) {
 
-                    if (Venom.getInstance().isLagging() || user.getLagProcessor().isTotalLag() || user.getCombatData().cancelTicks > 3 || (user.getCombatData().getTargetUser() != null && user.getCombatData().getTargetUser().getMovementData().isCollidesHorizontally()) || (user.getCombatData().getLastEntityAttacked() != null && user.getPlayer().getLocation().distance(user.getCombatData().getLastEntityAttacked().getLocation()) < 1.3)) {
-                        verbose.setVerbose(0);
-                        return;
-                    }
+                        if (Venom.getInstance().isLagging() || user.getLagProcessor().isTotalLag() || user.getCombatData().cancelTicks > 3 || (user.getCombatData().getTargetUser() != null && user.getCombatData().getTargetUser().getMovementData().isCollidesHorizontally()) || (user.getCombatData().getLastEntityAttacked() != null && user.getPlayer().getLocation().distance(user.getCombatData().getLastEntityAttacked().getLocation()) < 1.3)) {
+                            verbose.setVerbose(0);
+                            return;
+                        }
 
-                    Location loc = user.getMovementData().getTo().clone().toLocation(user.getPlayer().getWorld());
+                        Location loc = user.getMovementData().getTo().clone().toLocation(user.getPlayer().getWorld());
 
-                    LivingEntity livingEntity = (LivingEntity) ((UseEntityEvent) e).getEntity();
+                        LivingEntity livingEntity = (LivingEntity) ((UseEntityEvent) e).getEntity();
 
-                    pastLocation.forEach(loc1 -> boundingBoxList.add(MathUtil.getHitbox(livingEntity, loc1, user)));
+                        pastLocation.forEach(loc1 -> boundingBoxList.add(MathUtil.getHitbox(livingEntity, loc1, user)));
 
-                    loc.setY(loc.getY() + (user.getPlayer().isSneaking() ? 1.53 : user.getPlayer().getEyeHeight()));
+                        loc.setY(loc.getY() + (user.getPlayer().isSneaking() ? 1.53 : user.getPlayer().getEyeHeight()));
 
-                    RayTrace trace = new RayTrace(loc.toVector(), user.getPlayer().getEyeLocation().getDirection());
+                        RayTrace trace = new RayTrace(loc.toVector(), user.getPlayer().getEyeLocation().getDirection());
 
-                    boolean interspects = boundingBoxList.stream().noneMatch(box -> trace.intersects(box, box.getMinimum().distance(loc.toVector()) + 1.0, 0.2));
+                        boolean interspects = boundingBoxList.stream().noneMatch(box -> trace.intersects(box, box.getMinimum().distance(loc.toVector()) + 1.0, 0.2));
 
-                    if (interspects && verbose.flag(8, 10000L)) {
-                        alert(user, false,"BBS -> " + boundingBoxList.size());
-                    } else {
-                        user.setInBoxTicks(user.getInBoxTicks() + 1);
+                        if (interspects && verbose.flag(8, 10000L)) {
+                            alert(user, false, "BBS -> " + boundingBoxList.size());
+                        } else {
+                            user.setInBoxTicks(user.getInBoxTicks() + 1);
+                        }
                     }
                 }
             }

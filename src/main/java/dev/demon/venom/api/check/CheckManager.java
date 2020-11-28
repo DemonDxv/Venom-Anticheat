@@ -41,7 +41,8 @@ public class CheckManager {
             KillauraC.class,
             KillauraD.class,
             KillauraE.class,
-            KillauraF.class,
+
+         //   KillauraF.class,
             KillauraG.class,
             KillauraH.class,
             KillauraI.class,
@@ -66,6 +67,7 @@ public class CheckManager {
             FlyB.class,
             FlyC.class,
             FlyD.class,
+            FlyE.class,
 
 
 
@@ -102,7 +104,8 @@ public class CheckManager {
             BadPacketsC1.class,
             BadPacketsD1.class,
             BadPacketsE1.class,
-            BadPacketsF1.class,
+          //  BadPacketsF1.class,
+            BadPacketsG1.class,
 
             TimerA.class,
 

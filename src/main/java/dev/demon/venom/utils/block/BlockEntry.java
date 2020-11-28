@@ -14,9 +14,11 @@ public class BlockEntry {
 
     private Block block;
     private BoundingBox boundingBox;
+    private boolean inCombat;
 
-    public BlockEntry(Block block, BoundingBox boundingBox) {
+    public BlockEntry(Block block, BoundingBox boundingBox, boolean inCombat) {
         this.block = block;
         this.boundingBox = boundingBox;
+        this.inCombat = inCombat;
     }
 }

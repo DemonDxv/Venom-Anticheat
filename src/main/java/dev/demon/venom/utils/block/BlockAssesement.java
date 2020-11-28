@@ -4,6 +4,7 @@ package dev.demon.venom.utils.block;
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.box.BoundingBox;
+import dev.demon.venom.utils.box.ReflectionUtil;
 import dev.demon.venom.utils.version.VersionUtil;
 
 import lombok.Getter;
@@ -26,7 +27,7 @@ public class BlockAssesement {
 
     private User user;
     private BoundingBox boundingBox;
-    private boolean cactus, enchantmentTable, testGround, ironBar, collidesHorizontallyStrick, presurePlate, enderFrame, bed, leaves, chest, trapDoor, hopper, lillyPad, anvil, collidedGround, door, halfGlass, liquidGround, onGround, collidesVertically, collidesHorizontally, soulSand, snow, onIce, onNearIce, blockAbove, stair, slab, pistion, climbale, groundSlime, web, chests, halfblock, liquid, wall, carpet, stairSlabs, slime, fence, rail;
+    private boolean cactus, enchantmentTable, nearWallCombat, inBlock, testGround, ironBar, collidesHorizontallyStrick, presurePlate, enderFrame, bed, leaves, chest, trapDoor, hopper, lillyPad, anvil, collidedGround, door, halfGlass, liquidGround, onGround, collidesVertically, collidesHorizontally, soulSand, snow, onIce, onNearIce, blockAbove, stair, slab, pistion, climbale, groundSlime, web, chests, halfblock, liquid, wall, carpet, stairSlabs, slime, fence, rail;
 
     private int lastNoneNullblock = 0;
 
@@ -40,8 +41,6 @@ public class BlockAssesement {
 
 
         if (user.getMovementData().isChunkLoaded()) {
-
-
 
             if (block != null) {
                 user.getMovementData().setLastBlockGroundTick(user.getConnectedTick());
@@ -85,150 +84,339 @@ public class BlockAssesement {
         }
     }
 
-    public void updateBlocks(List<BlockEntry> data) {
+    public void updateBlocks(BlockEntry blockEntry, boolean ladder) {
 
-        data.forEach(blockEntry -> {
+        //data.parallelStream().forEach(blockEntry -> {
 
 
-            Block block = blockEntry.getBlock();
+        Block block = blockEntry.getBlock();
 
-            BoundingBox bb = blockEntry.getBoundingBox();
+        BoundingBox bb = blockEntry.getBoundingBox();
 
-            if ((block.getType() == Material.ICE || block.getType() == Material.PACKED_ICE) && boundingBox.subtract(-0.5F, 0.6f, -0.5F, 0, 0, 0).collidesVertically(bb)) {
-                onIce = true;
+        if (bb.intersectsWithBox(user.getBoundingBox())) {
+            inBlock = true;
+        }
+
+
+        if (bb.collidesVertically(boundingBox)) {
+            collidesVertically = true;
+        }
+
+        if (block.getType() != null && block.getType().isBlock()) {
+            if (bb.collidesHorizontally(boundingBox)) {
+                collidesHorizontally = true;
             }
 
-            if ((block.getType() == Material.ICE || block.getType() == Material.PACKED_ICE) && boundingBox.subtract(0, 1f, 0, 0, 0, 0).collidesVertically(bb)) {
-                onNearIce = true;
+            if (blockEntry.isInCombat() && bb.grow(1.9f, 0, 1.9f).collidesHorizontally(boundingBox)) {
+                nearWallCombat = true;
             }
-
-            if ((bb.getMaximum().getY()) >= boundingBox.getMaximum().getY() && bb.collidesVertically(boundingBox.add(0, 0, 0, 0, 0.35f, 0))) {
-                blockAbove = true;
-            }
-
-            if (block.getType() == Material.WEB && boundingBox.collidesVertically(bb)) {
-                web = true;
-            }
-
-            if (block.getType().getData() == PressurePlate.class) {
-                presurePlate = true;
-            }
-
-            if (block.getType() == Material.ENDER_PORTAL_FRAME) {
-                enderFrame = true;
-            }
-
-            if (block.getType() == Material.BED_BLOCK || block.getType() == Material.BED) {
-                bed = true;
-            }
-
-            if (block.getType() == Material.LEAVES || block.getType() == Material.LEAVES) {
-                leaves = true;
-            }
-
-            if (block.getType() == Material.CACTUS) {
-                cactus = true;
-            }
-
-            if (block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST || block.getType() == Material.ENDER_CHEST) {
-                chest = true;
-            }
-
-            if (block.getType().getData() == TrapDoor.class || block.getType().getData() == Gate.class) {
-                trapDoor = true;
-            }
-
-            if (block.getType() == Material.HOPPER) {
-                hopper = true;
-            }
-
-            if (block.getType() == Material.WATER_LILY) {
-                lillyPad = true;
-            }
+        }
 
 
-            if (block.getType() == Material.WATER || block.getType() == Material.LAVA || block.getType() == Material.STATIONARY_LAVA || block.getType() == Material.STATIONARY_WATER) {
-                liquid = true;
-                if (user.getBlockData().solidLiquidTicks < 50) user.getBlockData().solidLiquidTicks++;
-            } else {
-                user.getBlockData().solidLiquidTicks = 0;
-                user.getBlockData().lastAnyBlockWithLiquid = System.currentTimeMillis();
-            }
+        if ((bb.collidesVertically(boundingBox.subtract(0, 0.1f, 0, 0, 0, 0))
+                || bb.collidesVertically(boundingBox.subtract(0, 0.2f, 0, 0, 0, 0)))) {
 
-            if (block.getType() == Material.ANVIL) {
-                anvil = true;
-            }
+            onGround = true;
+        }
 
-            if (block.getType() == Material.SNOW) {
-                snow = true;
-            }
+        if (block != null) {
 
-            if (block.getType().getData() == Door.class) {
-                door = true;
-            }
-
-            if (BlockUtil.isGlassPane(block)) {
-                halfGlass = true;
-            }
-
-            if (block.getType().getData() == Stairs.class) {
-                stair = true;
-            }
-
-            if (BlockUtil.isFence(block)) {
-                fence = true;
-            }
-
-            if (block.getType().getData() == Step.class || block.getType().getData() == WoodenStep.class) {
-                slab = true;
-            }
-
-            if (block.getType() == Material.RAILS || block.getType() == Material.DETECTOR_RAIL || block.getType() == Material.ACTIVATOR_RAIL || block.getType() == Material.POWERED_RAIL) {
-                rail = true;
-            }
-
-            if (block.getType() == Material.LADDER || Objects.requireNonNull(BlockUtil.getBlock(user.getPlayer().getLocation())).getType() == Material.LADDER || block.getType() == Material.VINE) {
-                climbale = true;
-            }
-
-            if (block.getType().getData() == Chest.class) {
-                chests = true;
-            }
-            if (BlockUtil.isHalfBlock(block)) {
-                halfblock = true;
-            }
-
-            if (block.getType() == Material.COBBLE_WALL || block.getType().getId() == 85 || block.getType().getId() == 139 || block.getType().getId() == 113 || block.getTypeId() == 188 || block.getTypeId() == 189 || block.getTypeId() == 190 || block.getTypeId() == 191 || block.getTypeId() == 192) {
-                wall = true;
-            }
-
-            if (block.getType() == Material.CARPET) carpet = true;
-
-            if (block.getType().getData() == Stairs.class || block.getType().getData() == Step.class)
-                stairSlabs = true;
-
-            if (Venom.getInstance().getVersionUtil().getVersion() == VersionUtil.Version.V1_8 && block.getType() == Material.SLIME_BLOCK) {
+            if (Venom.getInstance().getVersionUtil().getVersion() != VersionUtil.Version.V1_7 && block.getType() == Material.SLIME_BLOCK) {
                 slime = true;
             }
 
-            if (block.getType() == Material.SOUL_SAND) {
-                soulSand = true;
+            switch (block.getType()) {
+
+                case TRIPWIRE:
+           /*     case STRING: {
+                    string = true;
+                    break;
+                }*/
+
+                case CARPET: {
+                    carpet = true;
+
+                    if (user.getMovementData().isClientGround()) {
+                        onGround = true;
+                    }
+
+                    break;
+                }
+
+                case ICE:
+                case PACKED_ICE: {
+                    onIce = onNearIce = true;
+                    break;
+                }
+
+                case WEB: {
+                    web = true;
+                    break;
+                }
+
+                case ENDER_PORTAL_FRAME: {
+                    enderFrame = true;
+                    break;
+                }
+
+                case BED_BLOCK:
+                case BED: {
+                    bed = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case LEAVES:
+                case LEAVES_2: {
+                    leaves = true;
+                    break;
+                }
+
+                case CHEST:
+                case TRAPPED_CHEST:
+                case ENDER_CHEST: {
+                    chest = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case HOPPER: {
+                    hopper = true;
+                    break;
+                }
+
+                case WATER_LILY: {
+                    lillyPad = true;
+                }
+
+                case WATER:
+                case STATIONARY_WATER:
+                case LAVA:
+                case STATIONARY_LAVA: {
+                    liquid = true;
+                }
+
+                case ANVIL: {
+                    anvil = true;
+
+                    //wtF?
+                    if (!onGround && user.getMovementData().isClientGround()) {
+                        onGround = true;
+                    }
+
+                    break;
+                }
+
+                case SNOW:
+                case SNOW_BLOCK: {
+                    snow = true;
+                    break;
+                }
+
+                case LADDER:
+                case VINE: {
+                    if (block.getType() != Material.SNOW && block.getType() != Material.SNOW_BLOCK) {
+                        climbale = true;
+                    }
+                    halfblock = true;
+
+                    break;
+                }
+
+                case COBBLE_WALL: {
+                    wall = true;
+                    break;
+                }
+
+                case SOUL_SAND: {
+                    soulSand = true;
+                    break;
+                }
+
+                case IRON_BARDING: {
+                    ironBar = true;
+                    halfblock = true;
+
+                    break;
+                }
+
+                case ENCHANTMENT_TABLE: {
+                    enchantmentTable = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case PISTON_STICKY_BASE:
+                case PISTON_BASE:
+                case PISTON_EXTENSION:
+                case PISTON_MOVING_PIECE: {
+                    pistion = true;
+                    break;
+                }
+
+                case FLOWER_POT:
+                case DAYLIGHT_DETECTOR:
+                case DAYLIGHT_DETECTOR_INVERTED:
+                case SKULL:
+                case CAKE:
+                case REDSTONE_COMPARATOR:
+                case REDSTONE_COMPARATOR_OFF:
+                case REDSTONE_COMPARATOR_ON:
+                case DIODE_BLOCK_OFF:
+                case DIODE_BLOCK_ON:
+                case DIODE:
+                case CAKE_BLOCK: {
+
+                    switch (block.getType()) {
+                        case REDSTONE_COMPARATOR:
+                        case REDSTONE_COMPARATOR_OFF:
+                        case DIODE_BLOCK_OFF:
+                        case DIODE_BLOCK_ON:
+                        case DIODE:
+                  //      case REDSTONE_COMPARATOR_ON: {
+                    //        redstoneRepeater = true;
+                      //      break;
+                        //}
+                    }
+
+                    halfblock = true;
+                    break;
+                }
+
+                case FENCE:
+                case FENCE_GATE:
+                case ACACIA_FENCE:
+                case BIRCH_FENCE:
+                case ACACIA_FENCE_GATE:
+                case DARK_OAK_FENCE:
+                case IRON_FENCE:
+                case JUNGLE_FENCE:
+                case BIRCH_FENCE_GATE:
+                case DARK_OAK_FENCE_GATE:
+                case JUNGLE_FENCE_GATE:
+                case NETHER_FENCE:
+                case SPRUCE_FENCE:
+                case SPRUCE_FENCE_GATE: {
+                    fence = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case GOLD_PLATE:
+                case IRON_PLATE:
+                case STONE_PLATE:
+                case WOOD_PLATE: {
+                    presurePlate = true;
+                    break;
+                }
+
+                case TRAP_DOOR:
+                case IRON_TRAPDOOR: {
+                    trapDoor = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case DARK_OAK_DOOR:
+                case ACACIA_DOOR:
+                case BIRCH_DOOR:
+                case IRON_DOOR:
+                case JUNGLE_DOOR:
+                case SPRUCE_DOOR:
+                case WOOD_DOOR:
+                case WOODEN_DOOR:
+                case DARK_OAK_DOOR_ITEM:
+                case ACACIA_DOOR_ITEM:
+                case BIRCH_DOOR_ITEM:
+                case IRON_DOOR_BLOCK:
+                case JUNGLE_DOOR_ITEM:
+                case SPRUCE_DOOR_ITEM: {
+                    door = true;
+                    break;
+                }
+
+                case STAINED_GLASS_PANE: {
+                    halfGlass = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case SANDSTONE_STAIRS:
+                case SMOOTH_STAIRS:
+                case SPRUCE_WOOD_STAIRS:
+                case ACACIA_STAIRS:
+                case BIRCH_WOOD_STAIRS:
+                case BRICK_STAIRS:
+                case COBBLESTONE_STAIRS:
+                case DARK_OAK_STAIRS:
+                case JUNGLE_WOOD_STAIRS:
+                case NETHER_BRICK_STAIRS:
+                case QUARTZ_STAIRS:
+                case RED_SANDSTONE_STAIRS:
+                case WOOD_STAIRS: {
+                    stair = true;
+                    stairSlabs = true;
+                    halfblock = true;
+                    break;
+                }
+
+                case DETECTOR_RAIL:
+                case POWERED_RAIL:
+                case ACTIVATOR_RAIL:
+                case RAILS: {
+                    rail = true;
+                    break;
+                }
+
+
+           /*     case REDSTONE_WIRE: {
+                    redstoneDust = true;
+                    break;
+                }*/
+
+                case LONG_GRASS:
+             /*    case DOUBLE_PLANT: {
+                    plant = true;
+                    break;
+                }*/
             }
 
-            if (block.getType() == Material.IRON_BARDING) {
-                ironBar = true;
+            switch (block.getType().getId()) {
+                case 85:
+                case 139:
+                case 113:
+                case 188:
+                case 189:
+                case 190:
+                case 191:
+                case 192: {
+                    wall = true;
+                }
             }
 
-            if (block.getType() == Material.ENCHANTMENT_TABLE) {
-                enchantmentTable = true;
+
+            if (slab || stair || fence || wall || ladder) {
+                halfblock = true;
             }
 
-            if (block.getType() == Material.PISTON_STICKY_BASE
-                    || block.getType() == Material.PISTON_BASE
-                    || block.getType() == Material.PISTON_EXTENSION
-                    || block.getType() == Material.PISTON_MOVING_PIECE) {
-                pistion = true;
+            if (ladder) {
+                climbale = true;
             }
-        });
+
+            Class<? extends MaterialData> blockData = block.getType().getData();
+
+            if ((bb.getMaximum().getY()) >= boundingBox.getMaximum().getY()
+                    && bb.collidesVertically(boundingBox.add(0, 0, 0, 0, 0.35f, 0))
+                    && block.getType() != Material.DOUBLE_PLANT) {
+                blockAbove = true;
+            }
+
+            if (block.getType() == Material.STEP || blockData == Step.class || blockData == WoodenStep.class) {
+                slab = true;
+                stairSlabs = true;
+            }
+        }
+        //});
+
     }
 }

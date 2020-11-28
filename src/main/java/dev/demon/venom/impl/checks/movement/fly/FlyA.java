@@ -25,7 +25,13 @@ public class FlyA extends Check {
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
                     || user.getBlockData().climbableTicks > 0
-                    || user.getBlockData().liquidTicks > 0) {
+                    || user.getBlockData().liquidTicks > 0
+                    || user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
+                    || user.getBlockData().webTicks > 0
+                    || TimeUtils.elapsed(user.getCombatData().getLastFireDamage()) < 1000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L) {
                 return;
             }
 
@@ -44,6 +50,10 @@ public class FlyA extends Check {
 
             if (deltaY <= (0.40444491418477924 + 1.0E-9F) && deltaY >= (0.40444491418477924 - 1.0E-9F)) {
                 return;
+            }
+
+            if (user.getBlockData().pistionTick > 0) {
+                max = 1;
             }
 
             if (deltaY > 0) {

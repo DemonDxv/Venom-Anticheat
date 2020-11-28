@@ -26,9 +26,13 @@ public class BadPacketsQ extends Check {
                 if (TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
                         || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
                         || user.getBlockData().climbableTicks > 0
-                        || user.getBlockData().blockAboveTicks > 0) {
+                        || user.getBlockData().blockAboveTicks > 0
+                        || user.getBlockData().stairTicks > 0
+                        || user.getBlockData().slabTicks > 0
+                        || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
                     return;
                 }
+
 
 
                 if (Math.abs(packetY - serverY) >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround() && user.getConnectedTick() > 100) {

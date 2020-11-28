@@ -40,14 +40,14 @@ public class PlayerLocation {
 
     public PlayerLocation(double x, double y, double z, long timeStamp) {
         this.x = x;
-        minX = x - 0.3;
-        maxX = x + 0.3;
+        minX = x - 0.41;
+        maxX = x + 0.41;
 
         this.y = y;
 
         this.z = z;
-        minZ = z - 0.3;
-        maxZ = z + 0.3;
+        minZ = z - 0.41;
+        maxZ = z + 0.41;
 
         this.timeStamp = timeStamp;
     }

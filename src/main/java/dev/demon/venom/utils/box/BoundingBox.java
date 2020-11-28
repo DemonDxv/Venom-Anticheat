@@ -1,6 +1,7 @@
 package dev.demon.venom.utils.box;
 
 import dev.demon.venom.Venom;
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import org.bukkit.Location;
@@ -120,7 +121,7 @@ public class BoundingBox {
         return (vector.getX() > this.minX && vector.getX() < this.maxX) && ((vector.getY() > this.minY && vector.getY() < this.maxY) && (vector.getZ() > this.minZ && vector.getZ() < this.maxZ));
     }
 
-    public List<BoundingBox> getCollidingBlockBoxes(Player player) {
+    public List<BoundingBox> getCollidingBlockBoxes(Player player, User user) {
         List<BoundingBox> toReturn = new ArrayList<>();
         int minX = MathUtil.floor(this.minX);
         int maxX = MathUtil.floor(this.maxX + 1);
@@ -137,7 +138,7 @@ public class BoundingBox {
                     if (Venom.getInstance().getBlockBoxManager().getBlockBox().isChunkLoaded(loc)) {
                         Block block = BlockUtil.getBlock(loc);
                         if (!block.getType().equals(Material.AIR)) {
-                            toReturn.addAll(Venom.getInstance().getBoxes().getBoundingBox(block));
+                            toReturn.addAll(Venom.getInstance().getBoxes().getBoundingBox(block, user));
                         }
                     }
                 }
@@ -154,10 +155,10 @@ public class BoundingBox {
         return new Vector(maxX, maxY, maxZ);
     }
 
-    public List<Block> getCollidingBlocks(Player player) {
+    public List<Block> getCollidingBlocks(Player player, User user) {
         List<Block> toReturn = new ArrayList<>();
 
-        getCollidingBlockBoxes(player).forEach(bb -> bb.getMinimum().toLocation(player.getWorld()).getBlock());
+        getCollidingBlockBoxes(player, user).forEach(bb -> bb.getMinimum().toLocation(player.getWorld()).getBlock());
         return toReturn;
     }
 
@@ -178,8 +179,8 @@ public class BoundingBox {
         return all;
     }
 
-    public boolean inBlock(Player player) {
-        return getCollidingBlocks(player).size() > 0;
+    public boolean inBlock(Player player, User user) {
+        return getCollidingBlocks(player, user).size() > 0;
     }
 
     public boolean intersectsWithBox(Object other) {

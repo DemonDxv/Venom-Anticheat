@@ -40,6 +40,7 @@ public class ReachA extends Check {
 
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
+
                 User targetUser = Venom.getInstance().getUserManager().getUser(((UseEntityEvent) e).getEntity().getUniqueId());
 
                 if (targetUser != null && user != null) {
@@ -75,14 +76,14 @@ public class ReachA extends Check {
                         return;
                     }
 
-                   // Bukkit.broadcastMessage(""+range);
+                //    Bukkit.broadcastMessage(""+range);
 
                     if (range > threshold) {
                         if ((violation += range - 2.25) > 5D) {
                             alert(user, false, "R -> "+range);
                         }
                     } else {
-                        violation -= Math.min(violation, 0.035);
+                        violation -= Math.min(violation, 0.1);
                     }
                 }
             }

@@ -22,7 +22,11 @@ public class FlyB extends Check {
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
                     || user.getBlockData().climbableTicks > 0
-                    || user.getBlockData().liquidTicks > 0) {
+                    || user.getBlockData().liquidTicks > 0 || user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
+                    || user.getBlockData().webTicks > 0
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L
+                    || user.getBlockData().pistionTick > 0) {
                 return;
             }
 

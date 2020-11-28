@@ -7,6 +7,7 @@ import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.RollingAverageDouble;
 import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
 
 @CheckInfo(name = "Timer", type = "A", banvl = 10)
@@ -22,7 +23,7 @@ public class TimerA extends Check {
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 1000L
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                && !user.isSafe()) {
+                    ||  TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
                 violation = 0;
                 return;
             }
@@ -38,7 +39,7 @@ public class TimerA extends Check {
 
                 double timerSpeed = 50.0 / timerRate.getAverage();
 
-                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.1 : 1.03;
+                double max = TimeUtils.elapsed(user.getMovementData().getLastEnderpearl()) < 1000L ? 1.1 : 1.02;
 
                 if (timerSpeed >= max && user.getConnectedTick() > 100) {
                     if (violation++ > 4) {

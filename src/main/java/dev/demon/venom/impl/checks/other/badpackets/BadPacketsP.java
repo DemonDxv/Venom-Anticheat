@@ -8,18 +8,22 @@ import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.SteerVehicleInEvent;
 import dev.demon.venom.impl.events.outevents.RespawnOutEvent;
+import dev.demon.venom.utils.time.TimeUtils;
 
 @CheckInfo(name = "BadPackets", type = "P", banvl = 10)
 public class BadPacketsP extends Check {
 
-    private boolean sentRespawn;
-
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof SteerVehicleInEvent) {
-            if (!user.getPlayer().isInsideVehicle()) {
-                alert(user, false, "Spoofing not in a vehicle");
+            if (TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L) {
+                return;
             }
+            if (!user.getPlayer().isInsideVehicle()) {
+                if (violation++ > 10) {
+                    alert(user, false, "Spoofing not in a vehicle");
+                }
+            } else violation -= Math.min(violation, 0.75);
         }
     }
 }

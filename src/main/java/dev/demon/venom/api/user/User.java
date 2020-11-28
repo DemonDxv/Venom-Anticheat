@@ -1,5 +1,6 @@
 package dev.demon.venom.api.user;
 
+import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.check.Check;
 import dev.demon.venom.utils.box.BoundingBox;
@@ -13,6 +14,7 @@ import dev.demon.venom.utils.block.BlockAssesement;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
+import dev.demon.venom.utils.math.evicting.EvictingList;
 import dev.demon.venom.utils.processor.*;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
@@ -53,7 +55,9 @@ public class User {
 
     private ScheduledExecutorService executorService;
 
-    private Deque<PlayerLocation> previousLocations = new LinkedList<>(), previousLocations2 = new LinkedList<>();
+    private Deque<PlayerLocation> previousLocations2 = new LinkedList<>();
+
+    public EvictingList<PlayerLocation> previousLocations = new EvictingList(10);
 
 
     private ProtocolVersion protocolVersion;
@@ -69,6 +73,8 @@ public class User {
     private WeakHashMap<Check, Integer> flaggedChecks = new WeakHashMap<>();
 
     public final List<Check> checks;
+
+    public boolean inBlock;
 
 
     //Optifine things
@@ -215,6 +221,8 @@ public class User {
 
             Block block = BlockUtil.getBlock(getMovementData().getBukkitTo().clone().add(0, -1, 0));
             if (block != null) {
+
+                this.inBlock = blockAssesement.isInBlock();
 
                 if (blockAssesement.isPistion()) {
                     if (blockData.pistionTick < 20) blockData.pistionTick++;

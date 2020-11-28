@@ -16,9 +16,9 @@ public class MoveData {
     private Block serverBlockBelow;
     private Location bukkitTo, bukkitFrom;
     private CustomLocation lastGroundLocation, lastSlimeLocation = new CustomLocation(0, 0, 0), to = new CustomLocation(0, 0, 0), from = to, fromFrom = from;
-    private boolean lastSprint, testGround, breakingOrPlacingBlock, didUnknownTeleport, isExplode, clientGround, lastClientGround, collidedGround, nearBoat, lastCollidedVertically, lastCollidedHorizontally, didTeleportInteract, chunkLoaded, onGround, worldLoaded, collidesHorizontally, collidesVertically, lastOnGround, sprinting, jumpPad, sneaking;
+    private boolean inBlockTeleporting, lastSprint, testGround, breakingOrPlacingBlock, didUnknownTeleport, isExplode, clientGround, lastClientGround, collidedGround, nearBoat, lastCollidedVertically, lastCollidedHorizontally, didTeleportInteract, chunkLoaded, onGround, worldLoaded, collidesHorizontally, collidesVertically, lastOnGround, sprinting, jumpPad, sneaking;
     private int lastTeleportTick, boatTicks, lastServerPostionFull, lastTelportInteractTick, commandBlockTeleportTicks, sprintTicks, lastServerPostion, clientAirTicks, clientGroundTicks, lastJumpPadUpdateTick, lastCheckBlockTick, lastBlockGroundTick, velocityTicks, mouseDeltaX, mouseDeltaY, unknownTeleportTick, afkMovementTotalBlocks, totalSlimeBlocksMoved, collidedGroundTicks, airTicks, groundTicks;
-    private long lastDig, lastBlockJump, lastPos, lastBlockFall, lastCollidedGround, lastFullBlockMoved, LastJunpPadUpdate, lastJumpPadSet, breakingOrPlacingTime, lastUnknownTeleport, lastTeleport, lastFullTeleport, lastExplode, lastEnderpearl, lastFallDamage, lastNearBoat;
+    private long lastTeleportInBlock, lastDig, lastBlockJump, lastPos, lastBlockFall, lastCollidedGround, lastFullBlockMoved, LastJunpPadUpdate, lastJumpPadSet, breakingOrPlacingTime, lastUnknownTeleport, lastTeleport, lastFullTeleport, lastExplode, lastEnderpearl, lastFallDamage, lastNearBoat;
     private double prediction, deltaXZ, lastGroundPrediction, lastFallJumpPrediction, groundYPredict, walkSpeed, movementSpeed;
     public PlayerLocation location2, location, previousLocation, previousPreviousLocation;
     private float pitchDelta, yawDelta, yawDeltaClamped;

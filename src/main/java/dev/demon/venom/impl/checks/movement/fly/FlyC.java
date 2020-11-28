@@ -24,7 +24,13 @@ public class FlyC extends Check {
                     || user.getVelocityData().getVelocityTicks() < 20
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
-                    || user.getBlockData().climbableTicks > 0) {
+                    || user.getBlockData().climbableTicks > 0
+                    || user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
+                    || user.getBlockData().webTicks > 0
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastExplode()) < 1000L) {
+
                 return;
             }
 
@@ -32,7 +38,7 @@ public class FlyC extends Check {
 
             double prediction = (lastDeltaY - 0.08D) * 0.9800000190734863D;
 
-            if (!user.getMovementData().isOnGround() && !user.getMovementData().isLastOnGround()) {
+            if (!user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround()) {
                 if ((deltaY - prediction) > 0.002 && user.getConnectedTick() > 150) {
                     if (violation++ > 2) {
                         alert(user, false, "CIY -> " + (deltaY - prediction));

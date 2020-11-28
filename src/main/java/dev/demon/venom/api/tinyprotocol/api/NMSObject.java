@@ -49,8 +49,12 @@ public abstract class NMSObject {
         process(player, ProtocolVersion.getGameVersion());
     }
 
-    public void set(FieldAccessor field, Object obj) {
-        field.set(object, obj);
+    public void set(WrappedField field, Object value) {
+        field.set(getObject(), value);
+    }
+
+    public void set(FieldAccessor<?> accessor, Object value) {
+        accessor.set(getObject(), value);
     }
 
     public abstract void updateObject();
@@ -225,6 +229,7 @@ public abstract class NMSObject {
         public static final String ABILITIES = CLIENT + "Abilities";
         public static final String TAB_COMPLETE = CLIENT + "TabComplete";
         public static final String CHAT = CLIENT + "Chat";
+        public static final String SETTINGS = CLIENT + "Settings";
     }
 
     public static class Server {
@@ -261,5 +266,6 @@ public abstract class NMSObject {
         public static final String ATTACH = SERVER + "AttachEntity";
         public static final String STATISTICS = SERVER + "Statistics";
         public static final String CLOSE_WINDOW = SERVER + "CloseWindow";
+
     }
 }

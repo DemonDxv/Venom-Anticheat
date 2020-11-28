@@ -13,6 +13,9 @@ public class FlyD extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
+            if (TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
+                return;
+            }
             if (user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround() && !user.getMovementData().isOnGround()) {
                 if (user.getConnectedTick() > 200) {
                     if (vl++ > 0) {

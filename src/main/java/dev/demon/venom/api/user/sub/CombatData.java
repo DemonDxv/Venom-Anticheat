@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 public class CombatData {
-    private long lastDeath, lastRandomDamage, lastUseEntityPacket, lastEntityDamage, lastEntityDamageAttack, lastRespawn, lastFireDamage, lastBowDamage;
+    private long lastPoisonDamage, lastDeath, lastRandomDamage, lastUseEntityPacket, lastEntityDamage, lastEntityDamageAttack, lastRespawn, lastFireDamage, lastBowDamage;
     private Entity lastEntityAttacked;
     public int lastBowDamageTick, lastAttackedTick, hitDelay, lastUseEntityTick, cps, lastBowStrength, noDamageTicks, cancelTicks, constantEntityTicks;
     private boolean breakingBlock, respawn;

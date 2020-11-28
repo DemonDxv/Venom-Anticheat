@@ -32,15 +32,26 @@ public enum ProtocolVersion {
     V1_13_1(351, "v1_13_R2"),
     V1_13_2(352, "v1_13_R2"),
     V1_14(477, "v1_14_R1"),
+    V1_14_1(480, "v1_14_R1"),
+    v1_14_2(485, "v1_14_R1"),
+    v1_14_3(490, "v1_14_R1"),
+    v1_14_4(498, "v1_14_R1"),
+    v1_15(573, "v1_15_R1"),
+    v1_15_1(575, "v1_15_R1"),
+    v1_15_2(578, "v1_15_R1"),
+    v1_16(735, "v1_16_R1"),
+    v1_16_1(736, "v1_16_R1"),
+    v1_16_2(751, "v1_16_R2"),
+    v1_16_3(753, "v1_16_R2"),
+    v1_16_4(754, "v1_16_R3"),
     UNKNOWN(-1, "UNKNOWN");
 
     @Getter
     private static ProtocolVersion gameVersion = fetchGameVersion();
-
     private int version;
-    private String serverVersion;
     @Getter
-    private static boolean paperSpigot = Bukkit.getServer().getBukkitVersion().toLowerCase().contains("paper");
+    private static boolean paper;
+    private String serverVersion;
 
     private static ProtocolVersion fetchGameVersion() {
         for (ProtocolVersion version : values()) {
@@ -57,10 +68,12 @@ public enum ProtocolVersion {
         return UNKNOWN;
     }
 
-
-
     public boolean isBelow(ProtocolVersion version) {
         return this.getVersion() < version.getVersion();
+    }
+
+    public boolean isOrBelow(ProtocolVersion version) {
+        return this.getVersion() <= version.getVersion();
     }
 
     public boolean isAbove(ProtocolVersion version) {
@@ -69,5 +82,14 @@ public enum ProtocolVersion {
 
     public boolean isOrAbove(ProtocolVersion version) {
         return this.getVersion() >= version.getVersion();
+    }
+
+    static {
+        try {
+            Class.forName("org.github.paperspigot.PaperSpigotConfig");
+            paper = true;
+        } catch(Exception e) {
+            paper = false;
+        }
     }
 }

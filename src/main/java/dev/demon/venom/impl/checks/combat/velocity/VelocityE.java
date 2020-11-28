@@ -16,7 +16,12 @@ public class VelocityE extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
 
-            if (user.generalCancel() || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
+            if (user.generalCancel()
+                    || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastEntityDamageAttack()) > 1000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
+                    || TimeUtils.elapsed(user.getCombatData().getLastFireDamage()) < 1000L) {
                 return;
             }
 
@@ -29,8 +34,7 @@ public class VelocityE extends Check {
             double ratio = Math.abs(lastDeltaY / velocityY);
 
             if (user.getVelocityData().getVelocityTicks() == 3) {
-                if (ratio <= 0.9998 && deltaY <= 0.42F && velocityY < 1
-                        && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                if (ratio <= 0.9998 && deltaY <= 0.42F && velocityY < 1 && user.getMovementData().isClientGround()) {
                     alert(user, true,"VV -> "+ratio + "%");
                 }
             }

@@ -188,13 +188,16 @@ public class BukkitListeners implements Listener {
                     user.getCombatData().setLastEntityDamageAttack(System.currentTimeMillis());
                     user.getCombatData().setLastBowDamageTick(user.getConnectedTick());
                 }
+
+                if (e.getCause() == EntityDamageEvent.DamageCause.POISON) {
+                    user.getCombatData().setLastPoisonDamage(System.currentTimeMillis());
+                }
             }
         }
     }
 
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent e) {
-
 
         if (e.getDamager() instanceof Arrow) {
             User user = Venom.getInstance().getUserManager().getUser(e.getEntity().getUniqueId());

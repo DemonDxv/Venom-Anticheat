@@ -20,7 +20,8 @@ public class BadPacketsD extends Check {
                     || !user.isSafe()
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
                     || user.getBlockData().liquidTicks > 0
-                    || user.getVelocityData().getVelocityTicks() < 20) {
+                    || user.getVelocityData().getVelocityTicks() < 20
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
                 return;
             }
             if (deltaY != 0 && user.getConnectedTick() > 250) {

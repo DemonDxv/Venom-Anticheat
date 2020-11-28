@@ -5,6 +5,7 @@ import dev.demon.venom.api.tinyprotocol.api.NMSObject;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockPlacePacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutEntityEffectPacket;
@@ -29,14 +30,14 @@ import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created on 05/01/2020 Package me.jumba.sparky.util.processor
@@ -56,6 +57,8 @@ public class MovementProcessor {
 
     private TickTimer timer = new TickTimer(5);
 
+    private double lastGroundY;
+
     public void update(Object packet, String type) {
         if (user != null) {
 
@@ -66,6 +69,13 @@ public class MovementProcessor {
                 //user.debug("" + wrappedOutSpawnEntityPacket.getY());
 
                 if (wrappedOutSpawnEntityPacket.getY() > 0.0) {
+
+                    if (user.isInBlock() && user.getMovementData().getTo() != null) {
+                        double deltaY = (user.getMovementData().getTo().getY() - this.lastGroundY);
+                        if (deltaY <= .8) {
+                            user.getMovementData().setLastTeleportInBlock(System.currentTimeMillis());
+                        }
+                    }
 
                     if (user.getMovementData().isDidTeleportInteract()) {
                         user.getMovementData().setLastTelportInteractTick(user.getConnectedTick());
@@ -81,6 +91,77 @@ public class MovementProcessor {
                     user.getMovementData().setLastServerPostionFull(user.getConnectedTick());
                 }
             }
+
+            if (type.equalsIgnoreCase(Packet.Client.BLOCK_PLACE)) {
+
+                if (user.getMovementData().isChunkLoaded()) {
+
+                    boolean valid = false;
+
+                    if (user.getPlayer().getWorld() != null) {
+
+                        WrappedInBlockPlacePacket wrappedInBlockPlacePacket = new WrappedInBlockPlacePacket(packet, user.getPlayer());
+
+                        Block block = BlockUtil.getBlock(new Location(user.getPlayer().getWorld(), wrappedInBlockPlacePacket.getPosition().getX(),
+                                    wrappedInBlockPlacePacket.getPosition().getY(),
+                                    wrappedInBlockPlacePacket.getPosition().getZ()));
+
+                            Block blockBelow = BlockUtil.getBlock(new Location(user.getPlayer().getWorld(),
+                                    wrappedInBlockPlacePacket.getPosition().getX(),
+                                    wrappedInBlockPlacePacket.getPosition().getY() - 1,
+                                    wrappedInBlockPlacePacket.getPosition().getZ()));
+
+
+                            if (block != null && blockBelow != null && blockBelow.getType() == Material.AIR) {
+
+                                Block blockBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -1, 0));
+                                Block blockBelowBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -2, 0));
+
+                                if (blockBelowPlayer == null || blockBelowBelowPlayer == null) {
+                                    return;
+                                }
+                                if (user.getMiscData().getLastBlockPlaced() != null && blockBelowPlayer.getType() != Material.AIR && blockBelowBelowPlayer.getType() == Material.AIR) {
+                                    Block lastBlock = user.getMiscData().getLastBlockPlaced();
+
+                                    if (block.getLocation().distanceSquared(lastBlock.getLocation()) < 2) {
+
+                                        List<Block> lastTwoTargetBlocks = user.getPlayer().getLastTwoTargetBlocks((HashSet<Byte>) null, 100);
+
+                                        if (!(lastTwoTargetBlocks.size() != 2
+                                                || !lastTwoTargetBlocks.get(1).getType().isOccluding())) {
+                                            Block targetBlock = lastTwoTargetBlocks.get(1);
+                                            Block adjacentBlock = lastTwoTargetBlocks.get(0);
+
+                                            if (targetBlock.getFace(adjacentBlock) == BlockFace.UP) {
+                                                valid = true;
+                                            }
+                                        }
+
+                                        lastTwoTargetBlocks.clear();
+                                    }
+                                }
+
+                                if (BlockUtil.isHalfBlock(block)) {
+                                    valid = false;
+                                    user.getMiscData().setScaffoldProcessorIgnoreTicks(5);
+                                }
+
+                                if (user.getMiscData().getScaffoldProcessorIgnoreTicks() > 0) {
+                                    user.getMiscData().setScaffoldProcessorIgnoreTicks(user.getMiscData().getScaffoldProcessorIgnoreTicks() - 1);
+                                    valid = false;
+                                }
+
+                                user.getMiscData().setLastBlockPlaced(block);
+                            } else {
+                                valid = false;
+                            }
+                        } else {
+                            valid = false;
+                        }
+
+                        user.getMiscData().setBlockPlaceValidScaffold(valid);
+                    }
+                }
 
             if (type.equalsIgnoreCase(Packet.Client.BLOCK_PLACE)) {
 
@@ -142,18 +223,32 @@ public class MovementProcessor {
                     user.getMovementData().setSprinting(false);
                 }
 
-                if (wrappedInEntityActionPacket.getAction() == WrappedInEntityActionPacket.EnumPlayerAction.START_SNEAKING) {
+                if (wrappedInEntityActionPacket.getAction()
+                        == WrappedInEntityActionPacket.EnumPlayerAction.START_SNEAKING) {
                     user.getMovementData().setSneaking(true);
-                } else if (wrappedInEntityActionPacket.getAction() == WrappedInEntityActionPacket.EnumPlayerAction.STOP_SPRINTING) {
+                } else if (wrappedInEntityActionPacket.getAction()
+                        == WrappedInEntityActionPacket.EnumPlayerAction.STOP_SPRINTING) {
                     user.getMovementData().setSneaking(false);
                 }
             }
 
-            if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
+            if (type.equalsIgnoreCase(Packet.Client.POSITION)
+                    || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK)
+                    || type.equalsIgnoreCase(Packet.Client.LOOK)
+                    || type.equalsIgnoreCase(Packet.Client.FLYING)) {
+
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
 
-                WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, (short) -1, false);
-                TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
+                //Used for block lagback checking, dont use this for checks.
+                if (wrappedInFlyingPacket.isPos()
+                        && user.getMovementData().isOnGround()
+                        && user.getMovementData().isLastOnGround()
+                        && user.getMovementData().isClientGround()
+                        && user.getMovementData().isLastClientGround()
+                        && user.getMovementData().getTo().getY() % 0.015625 == 0.0
+                        && user.getMovementData().getFrom().getY() % 0.015625 == 0.0) {
+                    this.lastGroundY = wrappedInFlyingPacket.getY();
+                }
 
 
                 user.getOldProcessors().updateOldPrediction();
@@ -392,32 +487,31 @@ public class MovementProcessor {
 
             BlockAssesement blockAssesement = new BlockAssesement(user.getBoundingBox(), user);
 
-            List<BoundingBox> boxes = Venom.getInstance().getBlockBoxManager().getBlockBox().getCollidingBoxes(user.getPlayer().getWorld(), user.getBoundingBox().grow(0.3f, 0.35f, 0.3f));
-
-            List<BlockEntry> blockEntries = Collections.synchronizedList(new ArrayList<>());
-
             user.getMovementData().setChunkLoaded(BlockUtil.isChunkLoaded(user.getMovementData().getTo().toLocation(user.getPlayer().getWorld())));
 
+            boolean inCombat = user.getCombatData().wasAttacked(100);
+
+            Material bukkitBlock = Objects.requireNonNull(BlockUtil.getBlock(user.getPlayer().getLocation())).getType();
+
+            boolean climable = (bukkitBlock == Material.LADDER || bukkitBlock == Material.VINE);
+
+            float offset = (inCombat ? 0.9f
+                    : (climable || user.getBlockData().iceTicks > 0
+                    || (user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY()) < -1.00f ? 0.8f : 0.3f));
+
             if (user.getMovementData().isChunkLoaded()) {
-                boxes.parallelStream().forEach(boundingBox -> {
+
+                Venom.getInstance().getBlockBoxManager()
+                        .getBlockBox().getCollidingBoxes(user.getPlayer().getWorld(), user.getBoundingBox().grow(offset, 0.35f, offset), user)
+                        .parallelStream().forEach(boundingBox -> {
+
                     Block block = BlockUtil.getBlock(boundingBox.getMinimum().toLocation(user.getPlayer().getWorld()));
 
                     if (block != null) {
-
-                        BlockEntry blockEntry = new BlockEntry(block, boundingBox);
-
-                        blockAssesement.update(blockEntry.getBoundingBox(), blockEntry.getBlock(), user.getPlayer().getWorld());
-
-                        blockEntries.add(blockEntry);
+                        blockAssesement.updateBlocks(new BlockEntry(block, boundingBox, inCombat), climable);
                     }
                 });
             }
-
-            blockAssesement.updateBlocks(blockEntries);
-
-            blockEntries.clear();
-
-            boxes.clear();
 
             user.getMovementData().setOnGround(blockAssesement.isOnGround());
 

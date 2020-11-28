@@ -149,6 +149,7 @@ public abstract class Packet {
         public static final String CHAT = CLIENT + "Chat";
         public static final String STEER_VEHICLE = CLIENT + "SteerVehicle";
         public static final String CLIENT_COMMAND = CLIENT + "ClientCommand";
+        public static final String SETTINGS = CLIENT + "Settings";
     }
 
     public static class Server {

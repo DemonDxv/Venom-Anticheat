@@ -5,6 +5,7 @@ import dev.demon.venom.api.user.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -15,11 +16,12 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MiscData {
 
     private int lastDeadTick, blockingSpeedTicks, lastBlockPlaceTick, speedPotionTicks, mountedTicks, boatTicks, jumpPotionTicks;
-    private boolean debugMode, hasLagged, usingChunkBuster, dead, afkMovement, hasSetClientSensitivity, inventoryOpen, hasJumpPotion, hasSpeedPotion, switchedGamemodes, isNearBoat;
+    private boolean blockPlaceValidScaffold, debugMode, hasLagged, usingChunkBuster, dead, afkMovement, hasSetClientSensitivity, inventoryOpen, hasJumpPotion, hasSpeedPotion, switchedGamemodes, isNearBoat;
     private float speedPotionEffectLevel, jumpPotionMultiplyer;
-    private long lastEjectVechielEject, lastBlockBreakCancel, lastBlockCancel, lastNearBoat, lastMount, lastGamemodeSwitch, lastMoutUpdate, lastBlockPlace;
+    private long scaffoldProcessorIgnoreTicks, lastEjectVechielEject, lastBlockBreakCancel, lastBlockCancel, lastNearBoat, lastMount, lastGamemodeSwitch, lastMoutUpdate, lastBlockPlace;
     private double clientSensitivity, clientSensitivity2;
     private short transactionID2 = randomTransactionID(), transactionID = randomTransactionID(), transactionIDVelocity = randomTransactionIDVelocity(), transactionFastID = randomTransactionID();
+    private Block lastBlockPlaced;
 
     private User user;
 

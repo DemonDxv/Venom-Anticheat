@@ -2,6 +2,7 @@ package dev.demon.venom.utils.box.impl;
 
 
 import dev.demon.venom.Venom;
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.box.BoundingBox;
 
@@ -78,7 +79,7 @@ public class BoundingBoxes {
     }
 
 
-    public List<BoundingBox> getBoundingBox(Block block) {
+    public List<BoundingBox> getBoundingBox(Block block, User user) {
         if(blockBoxes.containsKey(block.getType())) {
             return blockBoxes.get(block.getType()).getBox(block);
         } else if(BlockUtil.isStair(block)) {
@@ -86,7 +87,7 @@ public class BoundingBoxes {
         } else if(BlockUtil.isPiston(block)) {
             return new PistonBox(block.getType()).getBox(block);
         } else {
-            return Venom.getInstance().getBlockBoxManager().getBlockBox().getSpecificBox(block.getLocation());
+            return Venom.getInstance().getBlockBoxManager().getBlockBox().getSpecificBox(block.getLocation(), user);
         }
     }
 }

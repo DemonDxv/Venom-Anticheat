@@ -3,6 +3,7 @@ package dev.demon.venom.utils.block;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.ProtocolVersion;
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.location.CustomLocation;
 
@@ -286,8 +287,8 @@ public class BlockUtil {
         return halfBlockArray.contains(type.toString().toLowerCase());
     }
 
-    public static List<BoundingBox> getBlockBoundingBox(Block block) {
-        List<BoundingBox> boxes = Venom.getInstance().getBlockBoxManager().getBlockBox().getSpecificBox(block.getLocation());
+    public static List<BoundingBox> getBlockBoundingBox(Block block, User user) {
+        List<BoundingBox> boxes = Venom.getInstance().getBlockBoxManager().getBlockBox().getSpecificBox(block.getLocation(), user);
 
         for (int i = 0; i < boxes.size(); i++) {
             if (boxes.get(i).getMaximum().length() == boxes.get(i).getMinimum().length()) {
@@ -364,10 +365,10 @@ public class BlockUtil {
         return name.contains("axe") || name.contains("spade") || name.contains("shovel") || name.contains("shear") || name.contains("sword");
     }
 
-    public static List<Block> getBlocks(BoundingBox box, World world) {
+    public static List<Block> getBlocks(BoundingBox box, World world, User user) {
         List<Block> block = new ArrayList<>();
 
-        Venom.getInstance().getBlockBoxManager().getBlockBox().getCollidingBoxes(world, box).forEach(box2 -> BlockUtil.getBlock(box2.getMinimum().toLocation(world)));
+        Venom.getInstance().getBlockBoxManager().getBlockBox().getCollidingBoxes(world, box, user).forEach(box2 -> BlockUtil.getBlock(box2.getMinimum().toLocation(world)));
         return block;
     }
 

@@ -10,6 +10,7 @@ import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.math.Verbose;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 
 @CheckInfo(name = "Killaura", type = "B", banvl = 10)
@@ -23,21 +24,23 @@ public class KillauraB extends Check {
         if (e instanceof UseEntityEvent) {
 
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
+                if (((UseEntityEvent) e).getEntity() instanceof Player) {
+                    CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
 
 
-                double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
+                    double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
 
-                double differenceXZ = Math.abs(deltaXZ - lastDeltaXZ);
+                    double differenceXZ = Math.abs(deltaXZ - lastDeltaXZ);
 
 
-                if (user.getMovementData().isSprinting() && deltaXZ > MathUtil.getBaseSpeed(user.getPlayer()) && differenceXZ < 0.027) {
-                    if (verbose.flag(3, 750L)) {
-                        alert(user, false, "Keep Sprint");
+                    if (user.getMovementData().isSprinting() && deltaXZ > MathUtil.getBaseSpeed(user.getPlayer()) && differenceXZ < 0.027) {
+                        if (verbose.flag(3, 750L)) {
+                            alert(user, false, "Keep Sprint");
+                        }
                     }
-                }
 
-                lastDeltaXZ = deltaXZ;
+                    lastDeltaXZ = deltaXZ;
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.math.Verbose;
+import org.bukkit.entity.Player;
 
 
 @CheckInfo(name = "Killaura", type = "D", banvl = 10)
@@ -21,14 +22,16 @@ public class KillauraD extends Check {
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                double yawDiff = (user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
-                attack++;
+                if (((UseEntityEvent) e).getEntity() instanceof Player) {
+                    double yawDiff = (user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+                    attack++;
 
-                double ratio = Math.abs((attack - miss) / user.getInBoxTicks());
+                    double ratio = Math.abs((attack - miss) / user.getInBoxTicks());
 
-                if (ratio <= 0.3 && yawDiff > 2.5 && user.getPlayer().getLocation().distance(((UseEntityEvent) e).getEntity().getLocation()) > 2.8) {
-                    if (verbose.flag(20, 1000L)) {
-                        alert(user, false,"R -> "+ratio + " Y -> "+yawDiff);
+                    if (ratio <= 0.3 && yawDiff > 2.5 && user.getPlayer().getLocation().distance(((UseEntityEvent) e).getEntity().getLocation()) > 2.8) {
+                        if (verbose.flag(20, 1000L)) {
+                            alert(user, false, "R -> " + ratio + " Y -> " + yawDiff);
+                        }
                     }
                 }
             }

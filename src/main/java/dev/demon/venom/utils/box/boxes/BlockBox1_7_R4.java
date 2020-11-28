@@ -1,5 +1,6 @@
 package dev.demon.venom.utils.box.boxes;
 
+import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.box.BlockBox;
 import dev.demon.venom.utils.box.BoundingBox;
@@ -20,8 +21,7 @@ import java.util.List;
 public class BlockBox1_7_R4 implements BlockBox {
 
     @Override
-    public List<BoundingBox> getCollidingBoxes(org.bukkit.World world, BoundingBox box) {
-
+    public List<BoundingBox> getCollidingBoxes(org.bukkit.World world, BoundingBox box, User user) {
         int minX = MathUtil.floor(box.minX);
         int maxX = MathUtil.floor(box.maxX + 1);
         int minY = MathUtil.floor(box.minY);
@@ -42,8 +42,9 @@ public class BlockBox1_7_R4 implements BlockBox {
 
         List<BoundingBox> boxes = Collections.synchronizedList(new ArrayList<>());
 
-        if(BlockUtil.isChunkLoaded(box.getMinimum().toLocation(world))) {
+        boolean chunkLoaded = BlockUtil.isChunkLoaded(box.getMinimum().toLocation(world));
 
+        if(chunkLoaded) {
             locs.parallelStream().forEach(loc -> {
                 org.bukkit.block.Block block = BlockUtil.getBlock(loc);
                 if (block != null && !block.getType().equals(Material.AIR)) {
@@ -95,17 +96,20 @@ public class BlockBox1_7_R4 implements BlockBox {
         return boxes;
     }
 
+
     @Override
-    public List<BoundingBox> getSpecificBox(Location loc) {
-        return Collections.synchronizedList(getCollidingBoxes(loc.getWorld(), new BoundingBox(loc.toVector(), loc.toVector())));
+    public List<BoundingBox> getSpecificBox(Location loc, User user) {
+        return Collections.synchronizedList(getCollidingBoxes(loc.getWorld(), new BoundingBox(loc.toVector(), loc.toVector()), user));
     }
 
     @Override
     public boolean isChunkLoaded(Location loc) {
 
-        net.minecraft.server.v1_7_R4.World world = ((CraftWorld) loc.getWorld()).getHandle();
+        return BlockUtil.isChunkLoaded(loc);
 
-        return !world.isStatic && world.isLoaded(loc.getBlockX(), 0, loc.getBlockZ()) && world.getChunkAtWorldCoords(loc.getBlockX(), loc.getBlockZ()).d;
+        //      net.minecraft.server.v1_7_R4.World world = ((CraftWorld) loc.getWorld()).getHandle();
+
+//        return !world.isStatic && world.isLoaded(loc.getBlockX(), 0, loc.getBlockZ()) && world.getChunkAtWorldCoords(loc.getBlockX(), loc.getBlockZ()).d;
     }
 
     @Override

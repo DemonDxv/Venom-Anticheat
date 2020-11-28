@@ -27,7 +27,7 @@ public class BadPacketsD1 extends Check {
             if (((BlockPlaceEvent) e).getItemStack().getType().isBlock()) {
                 if (MathUtil.isPost(lastFlying)) {
                     if (violation++ > 10) {
-                        alert(user, true, "Sent block blacement packet late");
+                        alert(user, true, "Sent block placement packet late");
                     }
                 } else violation = 0;
             }

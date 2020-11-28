@@ -22,9 +22,11 @@ public class SpeedA extends Check {
             if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
                     || user.generalCancel()
+                    || user.getBlockData().climbableTicks > 0
                     || user.getBlockData().liquidTicks > 0
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
-                    || user.getMiscData().isNearBoat()) {
+                    || user.getMiscData().isNearBoat()
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 1000L) {
                 return;
             }
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
@@ -42,6 +44,10 @@ public class SpeedA extends Check {
 
             if (user.getVelocityData().getVelocityTicks() < 20) {
                 prediction += user.getVelocityProcessor().getHorizontalTransaction();
+            }
+
+            if (user.getBlockData().pistionTick > 0) {
+                prediction += 0.8;
             }
 
 
