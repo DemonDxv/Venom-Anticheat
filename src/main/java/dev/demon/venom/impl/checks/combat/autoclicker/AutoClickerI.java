@@ -39,9 +39,11 @@ public class AutoClickerI extends Check {
             outliers = movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
-        }
-        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
-            violation = 0;
+            if (user.getMovementData().isBreakingOrPlacingBlock()) {
+                violation = 0;
+                outliers = 0;
+                lastOutliers = 0;
+            }
         }
     }
 }

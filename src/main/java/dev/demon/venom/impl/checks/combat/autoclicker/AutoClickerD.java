@@ -44,10 +44,10 @@ public class AutoClickerD extends Check {
             movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
-        }
-        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
-            movements = 0;
-            delays.clear();
+            if (user.getMovementData().isBreakingOrPlacingBlock()) {
+                violation = 0;
+                delays.clear();
+            }
         }
     }
 }

@@ -28,6 +28,10 @@ public class ReachA extends Check {
                 user.getMovementData().setPreviousLocation(user.getMovementData().getLocation());
             }
 
+            if (string != string) {
+
+            }
+
 
             user.getPreviousLocations().add(location);
 

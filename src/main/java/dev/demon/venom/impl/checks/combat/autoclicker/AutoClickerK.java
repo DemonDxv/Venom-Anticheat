@@ -45,10 +45,10 @@ public class AutoClickerK extends Check {
             ticks = 0;
         } else if (e instanceof FlyingInEvent) {
             ticks++;
-        }
-        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
-            ticks = 0;
-            delays.clear();
+            if (user.getMovementData().isBreakingOrPlacingBlock()) {
+                violation = 0;
+                delays.clear();
+            }
         }
     }
 }
