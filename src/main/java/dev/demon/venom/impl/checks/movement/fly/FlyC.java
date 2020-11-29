@@ -25,8 +25,9 @@ public class FlyC extends Check {
                     || user.getMiscData().isNearBoat()
                     || user.getBlockData().climbableTicks > 0
                     || user.getMiscData().getMountedTicks() > 0
+                    || TimeUtils.elapsed(user.getMiscData().getLastMoutUpdate()) < 1000L
                     || user.getBlockData().doorTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 2000L
+                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
                     || user.getBlockData().webTicks > 0
                     || user.getBlockData().bedTicks > 0
                     || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
@@ -53,7 +54,7 @@ public class FlyC extends Check {
                     if (violation++ > 2) {
                         alert(user, false, "Prediction -> " + (deltaY - prediction));
                     }
-                } else violation -= Math.min(violation, 0.1);
+                } else violation -= Math.min(violation, 0.2);
             }
 
             lastDeltaY = deltaY;

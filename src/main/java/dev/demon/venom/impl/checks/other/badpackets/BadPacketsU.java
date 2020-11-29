@@ -18,16 +18,16 @@ public class BadPacketsU extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().isTotalLag()) {
+            if (user.getLagProcessor().isLagging()) {
                 lastDig = 1000L;
                 violation = 0;
                 return;
             }
             if (TimeUtils.elapsed(lastDig) <= 5L && user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
-                if (violation++ > 5) {
+                if (violation++ > 10) {
                     alert(user, false, "Spamming Dig Packets");
                 }
-            } else violation -= Math.min(violation, 0.95);
+            } else violation = 0;
         }
         if (e instanceof BlockDigEvent) {
             if (((BlockDigEvent) e).getAction() == WrappedInBlockDigPacket.EnumPlayerDigType.RELEASE_USE_ITEM) {

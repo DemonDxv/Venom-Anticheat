@@ -28,7 +28,7 @@ public class InformationCommand {
 
                     int max = 6;
 
-                    commandSender.sendMessage(ChatColor.GRAY + "Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getLastTransaction());
+                    commandSender.sendMessage(ChatColor.GRAY + "Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getTransactionPing());
                     commandSender.sendMessage(ChatColor.GRAY + "Violations: " + ChatColor.GREEN + targetUser.getViolation());
                     commandSender.sendMessage(ChatColor.GRAY + "Lagging: " + (targetUser.getLagProcessor().isLagging() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
                     commandSender.sendMessage(ChatColor.GRAY + "Recent Checks flagged: " + ChatColor.GREEN + max+"/"+ targetUser.getFlaggedChecks().size());

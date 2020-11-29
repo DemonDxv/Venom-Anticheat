@@ -17,7 +17,7 @@ public class KillauraA extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().isTotalLag()) {
+            if (user.getLagProcessor().isLagging()) {
                 lastFlying = 1000L;
             }
             lastFlying = System.currentTimeMillis();

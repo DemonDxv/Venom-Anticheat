@@ -108,7 +108,7 @@ public class CheckManager {
 
             BadPacketsA1.class,
             BadPacketsB1.class,
-            BadPacketsC1.class,
+           // BadPacketsC1.class,
             BadPacketsD1.class,
             BadPacketsE1.class,
           //  BadPacketsF1.class,

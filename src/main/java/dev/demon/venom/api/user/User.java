@@ -43,6 +43,7 @@ public class User {
     private CombatData combatData;
     private MoveData movementData;
     private VelocityData velocityData;
+    private ConnectionData connectionData;
 
     private MovementProcessor movementProcessor;
     private CombatProcessor combatProcessor;
@@ -51,6 +52,10 @@ public class User {
     private PredictionProcessor predictionProcessor;
     private OptifineProcessor optifineProcessor;
     private OldProcessors oldProcessors;
+    private EntityActionProcessor entityActionProcessor;
+
+    private long joinPing, verifyTime, verifyID = MathUtil.getRandomInteger(-1000, -5000);
+
 
 
     private ScheduledExecutorService executorService;
@@ -62,11 +67,11 @@ public class User {
 
     private ProtocolVersion protocolVersion;
 
-    private long timestamp;
+    public long lastFlyig, timestamp;
 
-    private int nigger;
+    public int realClientTick, nigger;
 
-    private boolean connectedTickFix, banned, wasFlying, waitingForMovementVerify, safe, hasVerify, alerts = true;
+    public boolean connectedTickFix, banned, wasFlying, waitingForMovementVerify, safe, hasVerify, alerts = true, joinVerify, joinPingTest, badLagJoin, tempLagLogin;
     private int inBoxTicks = 0, connectedTick, movementVerifyStage, flyingTick, violation;
     public int totalBlockUpdates, totalBlocksCheck, movementVerifyBlocks;
     public WeakHashMap<Short, Long> transactionMap = new WeakHashMap<>();
@@ -100,6 +105,10 @@ public class User {
         }
     }
 
+    public int getTick() {
+        return getConnectedTick();
+    }
+
     public int getVL(Check check) {
         return vl.get(check) == null ? 0 : vl.get(check);
     }
@@ -119,6 +128,7 @@ public class User {
         blockData = new BlockData(this);
         miscData = new MiscData(this);
         velocityData = new VelocityData(this);
+        connectionData = new ConnectionData(this);
 
         boundingBox = new BoundingBox(0f, 0f, 0f, 0f, 0f, 0f);
 
@@ -153,6 +163,9 @@ public class User {
         optifineProcessor = new OptifineProcessor(this);
 
         oldProcessors = new OldProcessors(this);
+
+        entityActionProcessor = new EntityActionProcessor(this);
+
 
     }
     public void update(BlockAssesement blockAssesement) {
@@ -334,7 +347,7 @@ public class User {
 
         if (getPlayer().getVehicle() != null) {
             getMiscData().setLastMount(System.currentTimeMillis());
-            if (getMiscData().getMountedTicks() < 20) getMiscData().setMountedTicks(getMiscData().getMountedTicks() + 1);
+            if (getMiscData().getMountedTicks() < 20) getMiscData().setMountedTicks(getMiscData().getMountedTicks() + 2);
         } else {
             if (getMiscData().getMountedTicks() > 0) getMiscData().setMountedTicks(getMiscData().getMountedTicks() - 1);
         }

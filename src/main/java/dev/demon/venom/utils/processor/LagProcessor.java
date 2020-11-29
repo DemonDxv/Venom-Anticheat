@@ -1,15 +1,21 @@
 package dev.demon.venom.utils.processor;
 
+import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInKeepAlivePacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInTransactionPacket;
+import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutKeepAlivePacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
 import dev.demon.venom.api.user.User;
-
+import dev.demon.venom.utils.time.EventTimer;
+import dev.demon.venom.utils.time.RunUtils;
+import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created on 05/01/2020 Package me.jumba.sparky.util.processor
@@ -19,146 +25,249 @@ import java.util.HashMap;
 public class LagProcessor {
     private User user;
 
-    private long lastTransactionDiffPing, lastLastTransaction, lastTransaction, lastKeepAlive, lastPreLag, lastPing, lastPingDiff, lastTransactionfast, lastTransactionsFastSent, lastFlying, hitTime, velocityPing;
+    private int kickBullshit, ignoreTransactionThreshold, maxDrop = 100, keepAlivePing,
+            transactionPing, lastLagTick, lastSkippedTick,
+            skippedPackets, lastLastTransaction, lastLastKeepAlive,
+            lastConnectionDropTick, lastConnectionDrop,
+            lastKeepAliveConnectionDrop, lastKeepaliveDrop;
 
-    private boolean lagging, spikeLag, totalLag, isReallySpiking;
+    private boolean isLagging;
 
-    private int currentPing, lastLagTick = -2, lastFastTransactionPing, lastSpikeLagTick, keepALiveTicks;
+    private long lastFastTransaction, sentKP, kpTime, hitTime, velocityPing, lastServerKeepalive, lastFlyingPacket, lastClientKeepAlive, lastClientTransaction, keepAliveTrasactionDifference;
 
-    private double transactionFastLagThreshold, spikeLagThreshold;
+    private short transactionID = 500;
 
-    private HashMap<Integer, Long> spikeMap = new HashMap<>();
+    private Map<Short, Long> transactionMap = new WeakHashMap<>();
 
+    private long lastPosPing, posPing, lastPosFlyingLag, posLagPingPrediction, lastKeepAlivePosPing, keepAlivePosPing;
+    private int magicLagValue, timeOutBuffer, lastKPCheckTick, totalSkippedPackets;
+
+
+    private int lastTickTaken, badPacketCounter;
+
+    private boolean expectingC03;
+    private long sentKPTest;
+
+    private EventTimer smallPacketDropTimer, connectionDropTimer;
+
+    public void setupTimers() {
+        smallPacketDropTimer = new EventTimer(600 , user);
+        connectionDropTimer = new EventTimer(200, user);
+    }
+
+    public void startPingCheck() {
+        Venom.getInstance().getExecutorService().scheduleAtFixedRate(() ->
+                Venom.getInstance().getUserManager().userMapToList().parallelStream().forEach(users -> {
+
+                    if ((users.getTick() - users.getLagProcessor().lastConnectionDropTick) < 100
+                            && (users.getTick() - users.getLagProcessor().lastKeepaliveDrop) < 100
+                            && (users.getLagProcessor().skippedPackets > 5 || (users.getTick() > 80 && (users.getTick() -
+                            users.getLagProcessor().lastSkippedTick) < 80))) {
+                        users.getLagProcessor().lastLagTick = users.getTick();
+                    }
+
+                    if (!users.getConnectionData().getDelayedJoinTimer().hasNotPassedWithLag()) {
+                        users.getLagProcessor().isLagging = (users.getTick() > 50 && (users.getTick() - users.getLagProcessor().lastLagTick) < 50);
+                    }
+
+                    if (!users.getLagProcessor().longTermLag()) {
+
+                    }
+                }), 60L, 60L, TimeUnit.MILLISECONDS);
+    }
 
     public void update(Object packet, String type) {
         if (user != null) {
 
 
-            //Skipped ticks
-            if (type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING) || type.equalsIgnoreCase(Packet.Client.POSITION)) {
-                lastFlying = System.currentTimeMillis();
-            }
+            if (type.equalsIgnoreCase(Packet.Client.POSITION)
+                    || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK)
+                    || type.equalsIgnoreCase(Packet.Client.LOOK)
+                    || type.equalsIgnoreCase(Packet.Client.FLYING)) {
 
-            //Faster transaction check because the old one was "not working"
-            if (type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING) || type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.KEEP_ALIVE) || type.equalsIgnoreCase(Packet.Client.TRANSACTION) || type.equalsIgnoreCase(Packet.Server.KEEP_ALIVE) || type.equalsIgnoreCase(Packet.Server.TRANSACTION)) {
+                if (expectingC03) {
+                    expectingC03 = false;
 
-                //Set the boolean 'totalLag' if they are normally lagging or spiking
+                    long ping = (System.currentTimeMillis() - sentKPTest);
+                    //user.debug("" + ping);
+                }
 
-                if (lagging || isReallySpiking) {
-                    totalLag = true;
+                long shit = (System.currentTimeMillis() - user.lastFlyig);
+
+                if (TimeUtils.secondsFromLong(user.getMiscData().getLastRespawnTicksSet()) > 15L) {
+                    if (user.getMiscData().getRespawnLagTicks() > 0) {
+                        user.getMiscData().setRespawnLagTicks(user.getMiscData().getRespawnLagTicks() - 1);
+                    }
+                }
+
+                if (shit > 38L) {
+                    user.realClientTick++;
+
+                    if (user.getMiscData().getRespawnLagTicks() > 0) {
+                        user.getMiscData().setRespawnLagTicks(user.getMiscData().getRespawnLagTicks() - 1);
+                    }
+                }
+
+                user.lastFlyig = System.currentTimeMillis();
+
+                if (type.equalsIgnoreCase(Packet.Client.POSITION)
+                        || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK)
+                        || type.equalsIgnoreCase(Packet.Client.FLYING)) {
+
+                    if (user.isBadLagJoin()) {
+                        user.setTempLagLogin(user.getTick() < 500);
+                    } else {
+                        user.setTempLagLogin(false);
+                    }
+
+                    lastPosPing = posPing;
+                    posPing = (System.currentTimeMillis() - lastPosFlyingLag);
+                    long predictedLag = (Math.abs(posPing - lastPosPing));
+
+                    posLagPingPrediction = (int) predictedLag;
+                    lastPosFlyingLag = System.currentTimeMillis();
+
+                    lastKeepAlivePosPing = keepAlivePosPing;
+                    keepAlivePosPing = (System.currentTimeMillis() - lastServerKeepalive);
+
+                    if (Math.abs(keepAlivePosPing - lastKeepAlivePosPing) < 20L) {
+                        if (magicLagValue < 30) magicLagValue++;
+                    } else {
+                        if (magicLagValue > 0) magicLagValue--;
+                    }
+
+                    lastPosFlyingLag = System.currentTimeMillis();
+
+                }
+
+                long lastFlying = (System.currentTimeMillis() - this.lastFlyingPacket);
+
+                if (lastFlying < 25L) {
+                    if (this.skippedPackets < 20) this.skippedPackets += 5;
+
+                    this.lastSkippedTick = user.getTick();
+                    totalSkippedPackets++;
                 } else {
-                    totalLag = false;
+                    if (totalSkippedPackets > 0) totalSkippedPackets--;
+
+                    if (this.skippedPackets > 0) this.skippedPackets--;
                 }
 
-                if (transactionFastLagThreshold > 10) {
-                    lastSpikeLagTick = user.getConnectedTick();
-                }
+                //
 
-                int currentSpikeDifference = Math.abs(lastSpikeLagTick - user.getConnectedTick());
+                this.lastFlyingPacket = System.currentTimeMillis();
 
-                //Calulcate if they did spike inevents the connection
-                if (currentSpikeDifference < 100 && user.getConnectedTick() > 105) {
-                    spikeLag = true;
-                } else {
-                    spikeLag = false;
-                }
-            }
-
-            if (type.equalsIgnoreCase(Packet.Client.KEEP_ALIVE)) {
-
-                //Keepalive ping check
-
-                long ping = (System.currentTimeMillis() - lastKeepAlive);
-
-                lastPingDiff = Math.abs(ping - lastPing);
-
-                lastPing = currentPing;
-
-                currentPing = (int) (System.currentTimeMillis() - lastKeepAlive);
 
             }
 
             if (type.equalsIgnoreCase(Packet.Server.KEEP_ALIVE)) {
 
-                //Transaction ping check
+                WrappedOutKeepAlivePacket wrappedOutKeepAlivePacket = new WrappedOutKeepAlivePacket(packet, user.getPlayer());
 
-                //We add the id's to a map so if the player doesn't send one back that is correct we know they are trying to fake them
+                int id = (int) wrappedOutKeepAlivePacket.getTime();
+                if (user.getEntityActionProcessor().getDataMap().containsKey(id)) return;
 
-                short id = (short) (user.getMiscData().randomTransactionID() + user.getMiscData().getTransactionID());
-                user.getTransactionMap().put(id, System.currentTimeMillis());
-                user.getMiscData().setTransactionID(id);
+                sentKPTest = System.currentTimeMillis();
+                expectingC03 = true;
 
-                WrappedOutTransaction wrappedOutTransaction = new WrappedOutTransaction(0, id, false);
-                TinyProtocolHandler.getInstance().getChannel().sendPacket(user.getPlayer(), wrappedOutTransaction.getObject());
 
-                if (user.getTransactionMap().size() > 30) {
-                    user.getTransactionMap().clear();
+                this.transactionMap.put(this.transactionID, System.currentTimeMillis());
+
+                this.lastServerKeepalive = System.currentTimeMillis();
+
+                TinyProtocolHandler.sendPacket(user.getPlayer(), new WrappedOutTransaction(0, this.transactionID, false).getObject());
+
+                sentKP = System.currentTimeMillis();
+
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.KEEP_ALIVE)) {
+
+                WrappedInKeepAlivePacket wrappedInKeepAlivePacket = new WrappedInKeepAlivePacket(packet, user.getPlayer());
+
+                if (!user.isJoinPingTest() && wrappedInKeepAlivePacket.getTime() == user.getVerifyID()) {
+                    user.setJoinPingTest(true);
+
+                    user.setJoinPing((System.currentTimeMillis() - user.getVerifyTime()));
+
+                    if (user.getJoinPing() > 500L) {
+                        // user.debug("delayed check startup");
+                        user.getConnectionData().getDelayedJoinTimer().reset();
+                        user.getLagProcessor().setLagging(true);
+                        user.setBadLagJoin(true);
+                        user.setTempLagLogin(true);
+                    }
                 }
 
-                lastKeepAlive = System.currentTimeMillis();
+                this.kpTime = (System.currentTimeMillis() - this.sentKP);
+
+                this.lastLastKeepAlive = this.keepAlivePing;
+                this.keepAlivePing = (int) (System.currentTimeMillis() - this.lastServerKeepalive);
+
+                int drop = Math.abs(this.keepAlivePing - this.lastLastKeepAlive);
+
+                if (drop > this.maxDrop) {
+                    this.lastKeepaliveDrop = user.getTick();
+                }
+
+                this.lastKeepAliveConnectionDrop = drop;
+
+                this.keepAliveTrasactionDifference = (this.lastClientKeepAlive - this.lastClientTransaction);
+
+              /* if (this.keepAliveTrasactionDifference > 500 && !this.isLagging && (user.getConnectedTick() - this.lastLagTick) > 100) {
+                     if (this.ignoreTransactionThreshold++ > 5) {
+                         RunUtils.task(() -> user.getPlayer().kickPlayer("Timed out."));
+                     }
+                } else {
+                    this.ignoreTransactionThreshold = 0;
+                }*/
+
+                this.lastClientKeepAlive = System.currentTimeMillis();
+
             }
 
             if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
 
-                //Magic is here, we difference the transaction ping between the current and last to see if they are spiking inevents connection to the server
 
                 WrappedInTransactionPacket wrappedInTransactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
-                short id = wrappedInTransactionPacket.getAction();
-                short currentID = user.getMiscData().getTransactionID();
 
-                if (id == user.getMiscData().getTransactionFastID()) {
+                short ID = wrappedInTransactionPacket.getAction();
 
-                    long transactionDifference = (System.currentTimeMillis() - lastTransactionfast);
-                    long lastSentDifference = (System.currentTimeMillis() - lastTransactionsFastSent);
+                if (this.transactionMap.containsKey(ID)) {
 
-                    int ping = (int) Math.abs(transactionDifference - lastSentDifference);
+                    this.lastLastTransaction = this.transactionPing;
 
-                    int totalLag = Math.abs(ping - lastFastTransactionPing);
+                    long difference = (System.currentTimeMillis() - this.lastServerKeepalive);
 
-                    if (totalLag > 9) {
-                        if (transactionFastLagThreshold < 100.0) transactionFastLagThreshold+=1.00;
+                    this.transactionPing = (int) difference;
+
+                    int connectionDrop = this.lastConnectionDrop = Math.abs(this.transactionPing - this.lastLastTransaction);
+
+                    if (connectionDrop > 35) {
+                        this.smallPacketDropTimer.reset();
+                    }
+
+                    if (connectionDrop > this.maxDrop) {
+                        this.lastConnectionDropTick = user.getTick();
+                        this.connectionDropTimer.reset();
+                    }
+
+                    this.transactionMap.remove(ID);
+
+                    if (this.transactionID > 0) {
+                        this.transactionID--;
                     } else {
-                        if (transactionFastLagThreshold > 0.0) transactionFastLagThreshold-=1.00;
+                        this.transactionID = 500;
                     }
 
-
-                    lastFastTransactionPing = ping;
-
-                    lastTransactionfast = System.currentTimeMillis();
+                    this.lastClientTransaction = System.currentTimeMillis();
                 }
 
-                if (id == currentID && user.getTransactionMap().containsKey(id)) {
-
-                    lastLastTransaction = lastTransaction;
-                    lastTransaction = (System.currentTimeMillis() - lastKeepAlive);
-
-                    long diff = Math.abs(lastLastTransaction - lastTransaction);
-
-                    this.lastTransactionDiffPing = diff;
-
-                    //Check if the differnce is > 100 to set their lag 'pre-lag' time
-
-                    if (user.isSafe() && diff > 99L) {
-                        lastPreLag = System.currentTimeMillis();
-                        lastLagTick = user.getConnectedTick();
-                        lagging = true;
-                    }
-
-                    if (user.isSafe() && diff > 100L && (lastPingDiff >= diff || Math.abs(diff - lastPingDiff) < 20)) {
-                        lastPreLag = System.currentTimeMillis();
-                        lastLagTick = user.getConnectedTick();
-                    }
-
-                }
-
-                if ((System.currentTimeMillis() - lastPreLag) < 1000L) {
-                    lastLagTick = user.getConnectedTick();
-                }
-
-                lagging = lastLagTick > -1 && Math.abs(user.getConnectedTick() - lastLagTick) < 101;
-
-                user.getMiscData().setHasLagged(lagging);
             }
         }
+    }
+
+    public boolean longTermLag() {
+        return isLagging() || (user.getTick() - getLastLagTick()) < 100;
     }
 }

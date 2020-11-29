@@ -55,7 +55,7 @@ public class SpeedA extends Check {
             }
 
             if (user.getBlockData().redstoneTick > 0 || user.getBlockData().carpetTick > 0 || user.getBlockData().presurePlateTicks > 0) {
-                prediction += 0.36;
+                prediction += 0.1;
             }
 
             if (user.getBlockData().doorTicks > 0) {

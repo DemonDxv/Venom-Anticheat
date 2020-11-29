@@ -34,10 +34,10 @@ public class KillauraC extends Check {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
                 if (((UseEntityEvent) e).getEntity() instanceof Player) {
                     List<BoundingBox> boundingBoxList = new ArrayList<>();
-                    List<CustomLocation> pastLocation = hitBoxPastLocations.getEstimatedLocation(user.getLagProcessor().getLastTransaction(), Math.abs(user.getLagProcessor().getLastTransaction() - user.getLagProcessor().getLastLastTransaction()) + 200);
+                    List<CustomLocation> pastLocation = hitBoxPastLocations.getEstimatedLocation(user.getLagProcessor().getTransactionPing(), Math.abs(user.getLagProcessor().getLastClientTransaction() - user.getLagProcessor().getLastLastTransaction()) + 200);
                     if (pastLocation.size() > 0) {
 
-                        if (Venom.getInstance().isLagging() || user.getLagProcessor().isTotalLag() || user.getCombatData().cancelTicks > 3 || (user.getCombatData().getTargetUser() != null && user.getCombatData().getTargetUser().getMovementData().isCollidesHorizontally()) || (user.getCombatData().getLastEntityAttacked() != null && user.getPlayer().getLocation().distance(user.getCombatData().getLastEntityAttacked().getLocation()) < 1.3)) {
+                        if (Venom.getInstance().isLagging() || user.getLagProcessor().isLagging() || user.getCombatData().cancelTicks > 3 || (user.getCombatData().getTargetUser() != null && user.getCombatData().getTargetUser().getMovementData().isCollidesHorizontally()) || (user.getCombatData().getLastEntityAttacked() != null && user.getPlayer().getLocation().distance(user.getCombatData().getLastEntityAttacked().getLocation()) < 1.3)) {
                             verbose.setVerbose(0);
                             return;
                         }

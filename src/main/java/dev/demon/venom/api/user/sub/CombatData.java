@@ -2,6 +2,7 @@ package dev.demon.venom.api.user.sub;
 
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.utils.time.EventTimer;
 import dev.demon.venom.utils.time.TimeUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,8 @@ public class CombatData {
     private double lastVelocitySqr;
     private int transactionHits, maxSamples, movements;
     protected final List<Integer> delays = new ArrayList<>(maxSamples);
+    private EventTimer shootTimer, deathTimer, respawnTimer, bowDamageTimer, entitySwitchTimer, useEntityTimer, connectionVelocitySentTimer, randomDamageTimer, attackedTimer, fireDamageTimer;
+
 
     private User user;
 

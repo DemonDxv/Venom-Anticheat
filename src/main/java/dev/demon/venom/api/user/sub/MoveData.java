@@ -4,6 +4,7 @@ import dev.demon.venom.api.user.User;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
+import dev.demon.venom.utils.time.EventTimer;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
@@ -22,6 +23,7 @@ public class MoveData {
     private double prediction, deltaXZ, lastGroundPrediction, lastFallJumpPrediction, groundYPredict, walkSpeed, movementSpeed;
     public PlayerLocation location2, location, previousLocation, previousPreviousLocation;
     private float pitchDelta, yawDelta, yawDeltaClamped;
+    public EventTimer lastBlockDigTimer, lastBlockMoveTimer, lastLagTPReset, lastServerVelocity, jumpPadUpdateTimer, sufficationTimer, lastTeleportTimer, serverPositionTimer, blockJumpTimer, blockFallTimer, projectileTimer, enderPearlTimer, commandBlockTPTimer, jumpPadResetTimer, blockPlacedOnFenceTimer, fallDamageTimer, lastChunkNotLoaded, lastMovementTimer;
 
     public MoveData(User user) {
         this.user = user;

@@ -18,7 +18,7 @@ public class BadPacketsD1 extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().isLagging() || user.getLagProcessor().getLastPingDiff() > 100) {
+            if (user.getLagProcessor().isLagging()) {
                 lastFlying = 1000L;
             }
             lastFlying = System.currentTimeMillis();

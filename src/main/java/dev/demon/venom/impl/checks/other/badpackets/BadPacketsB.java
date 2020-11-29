@@ -28,7 +28,7 @@ public class BadPacketsB extends Check {
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
 
-                if (block && !user.getLagProcessor().isTotalLag()) {
+                if (block && !user.getLagProcessor().isLagging()) {
                     alert(user, false,"B -> " + block);
                 }
             }

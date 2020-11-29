@@ -17,19 +17,11 @@ public class BadPacketsB1 extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().getLastTransaction() >= 750) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "kick " + user.getPlayer().getName() + " Timed out.");
-                    }
-                }.runTask(Venom.getInstance());
-            }
-            long transactionPing = user.getLagProcessor().getLastTransaction();
+            long transactionPing = user.getLagProcessor().getTransactionPing();
 
             if (Math.abs(transactionPing - lastTransaction) == 0) {
                 if (violation++ > 300) {
-                    alert(user, false, "PD -> " + Math.abs(transactionPing - lastTransaction) + " LT -> "+user.getLagProcessor().getLastTransaction());
+                    alert(user, false, "PD -> " + Math.abs(transactionPing - lastTransaction) + " LT -> "+user.getLagProcessor().getTransactionPing());
                 }
             } else {
                 violation = 0;

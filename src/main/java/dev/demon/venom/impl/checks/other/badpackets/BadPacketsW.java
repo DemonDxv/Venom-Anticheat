@@ -19,7 +19,7 @@ public class BadPacketsW extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().getLastPing() >= 750) {
+            if (user.getLagProcessor().getTransactionPing() >= 750 || user.getLagProcessor().getKeepAlivePing() > 750) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -27,12 +27,12 @@ public class BadPacketsW extends Check {
                     }
                 }.runTask(Venom.getInstance());
             }
-            long keepAlivePing = user.getLagProcessor().getCurrentPing();
-            long transactionPing = user.getLagProcessor().getLastTransaction();
+            long keepAlivePing = user.getLagProcessor().getKeepAlivePing();
+            long transactionPing = user.getLagProcessor().getTransactionPing();
 
             if (Math.abs(keepAlivePing - lastPing) == 0) {
                 if (violation++ > 300) {
-                    alert(user, false, "PD -> "+Math.abs(keepAlivePing - lastPing) + " LKA -> "+user.getLagProcessor().getLastKeepAlive());
+                    alert(user, false, "PD -> "+Math.abs(keepAlivePing - lastPing) + " LKA -> "+lastPing);
                 }
             } else {
                 violation = 0;

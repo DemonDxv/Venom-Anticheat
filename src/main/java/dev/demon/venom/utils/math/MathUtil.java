@@ -73,6 +73,10 @@ public class MathUtil {
         return var0 < var2 ? var2 - 1 : var2;
     }
 
+    public static int getRandomInteger(int maximum, int minimum) {
+        return ((int) (Math.random() * (maximum - minimum))) + minimum;
+    }
+
     // Check for number prime or not
     public static boolean isPrime(int n) {
 

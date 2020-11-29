@@ -29,11 +29,12 @@ public class BadPacketsT extends Check {
                 lastLastPos = lastPos;
                 lastPos = System.currentTimeMillis();
 
-                if (TimeUtils.elapsed(lastTrans) > 100L && TimeUtils.elapsed(lastTrans) != user.getLagProcessor().getLastTransaction() || TimeUtils.elapsed(lastTrans) <= 5) {
+            /*    if (TimeUtils.elapsed(lastTrans) > 100L && TimeUtils.elapsed(lastTrans) != user.getLagProcessor().getLastTransaction() || TimeUtils.elapsed(lastTrans) <= 5) {
                     if (violation++ > 7) {
                         alert(user, true);
                     }
                 } else violation -= Math.min(violation, 0.75);
+            }*/
             }
         }
     }

@@ -18,16 +18,16 @@ public class BadPacketsV extends Check {
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (user.getLagProcessor().isTotalLag()) {
-                lastPlace = 1000L;
+            if (user.getLagProcessor().isLagging()) {
+                lastPlace = 2000L;
                 violation = 0;
                 return;
             }
             if (TimeUtils.elapsed(lastPlace) <= 5L && user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
-                if (violation++ > 5) {
+                if (violation++ > 10) {
                     alert(user, false, "Spamming Block Place Packets");
                 }
-            } else violation -= Math.min(violation, 0.95);
+            } else violation = 0;
         }
         if (e instanceof BlockPlaceEvent) {
             lastPlace = System.currentTimeMillis();

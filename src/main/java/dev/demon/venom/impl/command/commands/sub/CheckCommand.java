@@ -31,15 +31,11 @@ public class CheckCommand {
 
                         commandSender.sendMessage(ChatColor.WHITE + "Invalid Player Data: " + ChatColor.GREEN + targetUser.isConnectedTickFix());
 
-                        commandSender.sendMessage(ChatColor.WHITE + "Transaction Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getLastTransaction());
+                        commandSender.sendMessage(ChatColor.WHITE + "Transaction Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getTransactionPing());
 
-                        commandSender.sendMessage(ChatColor.WHITE + "KeepAlive Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getCurrentPing());
+                        commandSender.sendMessage(ChatColor.WHITE + "KeepAlive Ping: " + ChatColor.GREEN + targetUser.getLagProcessor().getKeepAlivePing());
 
                         commandSender.sendMessage(ChatColor.WHITE + "Lagging: " + ChatColor.GREEN + targetUser.getLagProcessor().isLagging());
-
-                        commandSender.sendMessage(ChatColor.WHITE + "Spiking: " + ChatColor.GREEN + targetUser.getLagProcessor().isSpikeLag());
-
-                        commandSender.sendMessage(ChatColor.WHITE + "Real Spike: " + ChatColor.GREEN + targetUser.getLagProcessor().isReallySpiking());
 
                         commandSender.sendMessage(line);
 

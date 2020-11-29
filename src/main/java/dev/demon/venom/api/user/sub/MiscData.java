@@ -2,6 +2,7 @@ package dev.demon.venom.api.user.sub;
 
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.utils.time.EventTimer;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
@@ -15,13 +16,14 @@ import java.util.concurrent.ThreadLocalRandom;
 @Setter
 public class MiscData {
 
-    private int lastDeadTick, blockingSpeedTicks, lastBlockPlaceTick, speedPotionTicks, mountedTicks, boatTicks, jumpPotionTicks;
+    private int respawnLagTicks, lastDeadTick, blockingSpeedTicks, lastBlockPlaceTick, speedPotionTicks, mountedTicks, boatTicks, jumpPotionTicks;
     private boolean blockPlaceValidScaffold, debugMode, hasLagged, usingChunkBuster, dead, afkMovement, hasSetClientSensitivity, inventoryOpen, hasJumpPotion, hasSpeedPotion, switchedGamemodes, isNearBoat;
     private float speedPotionEffectLevel, jumpPotionMultiplyer;
-    private long scaffoldProcessorIgnoreTicks, lastEjectVechielEject, lastBlockBreakCancel, lastBlockCancel, lastNearBoat, lastMount, lastGamemodeSwitch, lastMoutUpdate, lastBlockPlace;
+    private long lastRespawnTicksSet, scaffoldProcessorIgnoreTicks, lastEjectVechielEject, lastBlockBreakCancel, lastBlockCancel, lastNearBoat, lastMount, lastGamemodeSwitch, lastMoutUpdate, lastBlockPlace;
     private double clientSensitivity, clientSensitivity2;
     private short transactionID2 = randomTransactionID(), transactionID = randomTransactionID(), transactionIDVelocity = randomTransactionIDVelocity(), transactionFastID = randomTransactionID();
     private Block lastBlockPlaced;
+    private EventTimer pluginTeleportTimer, blockPlacePacketTimer, lastVoidDamage, teleportLagBullshit, packetRespawnTimer, blockBreakTimer, lastWorldSwitchTimer, teleportCommandDetectionTimer, commandTPTimer, blockPlaceTimer, dismountTimer, tpSignTimer, mountTimer, blockPlaceCancelTimer, blockBreakCancelTimer;
 
     private User user;
 
