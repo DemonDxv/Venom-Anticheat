@@ -55,7 +55,7 @@ public class Venom extends JavaPlugin {
     private BukkitListeners bukkitListener;
     private EventManager eventManager;
     private CommandManager commandManager;
-   // private MongoManager mongoManager;
+    private MongoManager mongoManager;
 
     private int currentTicks, lagStartCheck;
     private long lastServerTick, lastServerLag, lastServerStart;
@@ -81,7 +81,7 @@ public class Venom extends JavaPlugin {
         cfile = new File(getDataFolder(), "config.yml");
         saveDefaultConfig();
         loadConfiguration();
-     //   mongoManager = new MongoManager();
+        mongoManager = new MongoManager();
 
         bukkitVersion = Bukkit.getServer().getClass().getPackage().getName().substring(23);
 
