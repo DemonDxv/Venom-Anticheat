@@ -38,6 +38,7 @@ public class FlyA extends Check {
                 return;
             }
 
+
             double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
 
             double max = 0.42f + user.getMiscData().getJumpPotionMultiplyer() * 0.2;
