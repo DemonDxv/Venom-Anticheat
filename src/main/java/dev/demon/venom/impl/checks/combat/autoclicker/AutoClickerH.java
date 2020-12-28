@@ -1,63 +1,45 @@
 package dev.demon.venom.impl.checks.combat.autoclicker;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
-import dev.demon.venom.impl.events.inevents.BlockDigEvent;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.MathUtil;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-@CheckInfo(name = "Clicker", type = "H", banvl = 5)
 public class AutoClickerH extends Check {
+    public AutoClickerH(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
-    private int movements;
-    private final List<Integer> delays = new ArrayList<>(100);
-    private double lastTotal;
-
+    private double movements;
+    private List<Double> delays = new ArrayList<>();
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof ArmAnimationEvent || e instanceof BlockDigEvent) {
+        if (e instanceof FlyingInEvent) {
+            movements++;
+        }
+        if (e instanceof ArmAnimationEvent) {
+
             if (movements < 10) {
                 delays.add(movements);
 
-                if (delays.size() == 100) {
+                if (delays.size() == 500) {
+                    Collections.sort(delays);
 
-                    double std = MathUtil.getStandardDeviation(delays);
+                    double sigmoid = MathUtil.getSigmoidGraph(delays);
 
-                    double kurtosis = MathUtil.getKurtosis(delays);
-
-                    int outliers = (int) delays.stream()
-                            .filter(delay -> delay > 3)
-                            .count();
-
-                    double total = outliers + (Math.abs(std - kurtosis));
-
-                    double totalDiff = Math.abs(total - lastTotal);
-
-                    if (total <= 1.2 && totalDiff <= 0.1) {
-                        if (violation++ > 1) {
-                            alert(user, false, "T -> " + total + " TD -> " + totalDiff);
-                        }
-                    } else violation -= Math.min(violation, 0.1);
-
-                    lastTotal = total;
-                    delays.clear();
+                    Bukkit.broadcastMessage(""+sigmoid);
                 }
             }
             movements = 0;
-        } else if (e instanceof FlyingInEvent) {
-            movements++;
-            if (user.getMovementData().isBreakingOrPlacingBlock()) {
-                violation = 0;
-                delays.clear();
-            }
         }
     }
 }

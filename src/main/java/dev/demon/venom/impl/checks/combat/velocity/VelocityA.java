@@ -1,13 +1,9 @@
 package dev.demon.venom.impl.checks.combat.velocity;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
-import dev.demon.venom.api.tinyprotocol.api.Packet;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.inevents.*;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.time.TimeUtils;
@@ -17,26 +13,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
-@CheckInfo(name = "Velocity", type = "A", banvl = 2)
 public class VelocityA extends Check {
+
+    public VelocityA(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     private float getAIMoveSpeed, friction;
     private double lastDeltaXZ, lastVelocity;
 
+
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-
-
-            if (user.getVelocityData().getVelocityTicks() == 1) {
-                for (Map.Entry<Double, Short> doubleShortEntry : user.getVelocityProcessor().getLastVelocityHorizontal().entrySet()) {
-
-                    if (user.getMiscData().getTransactionIDVelocity() == doubleShortEntry.getValue()) {
-                        user.getVelocityProcessor().setHorizontalTransaction((Double) ((Map.Entry) doubleShortEntry).getKey());
-                        user.getVelocityProcessor().getLastVelocityHorizontal().clear();
-                    }
-                }
-            }
 
             if (user.getBlockData().wallTicks > 0
                     || user.getBlockData().fenceTicks > 0
@@ -157,8 +146,8 @@ public class VelocityA extends Check {
 
 
             if (user.getVelocityData().getVelocityTicks() == 1 && user.getConnectedTick() > 100) {
-                if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround() && deltaY > 0.42f) {
-                    alert(user, true,"HV -> " + (deltaXZ / prediction) + "%");
+                if (fullVelocity <= 0.995 && fullVelocity >= 0 && !user.getMovementData().isClientGround() && user.getMovementData().isLastClientGround()) {
+                    handleDetection(user, "Horizontal Velocity -> " + (deltaXZ / prediction) + "%");
                 }
                 lastVelocity = fullVelocity;
             }

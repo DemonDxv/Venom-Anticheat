@@ -1,7 +1,6 @@
 package dev.demon.venom.impl.checks.combat.velocity;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
@@ -13,17 +12,22 @@ import org.bukkit.Bukkit;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-@CheckInfo(name = "Velocity", type = "B", banvl = 3)
 public class VelocityB extends Check {
+
+    public VelocityB(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     private float getAIMoveSpeed, friction;
     private double lastDeltaXZ, lastVelocity;
 
+
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent) {
 
             if (user.getBlockData().wallTicks > 0
+                    || user.getMovementData().isCollidesVertically()
                     || user.getBlockData().fenceTicks > 0
                     || user.getMovementData().isCollidesHorizontally()
                     || user.generalCancel()
@@ -35,11 +39,10 @@ public class VelocityB extends Check {
             CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
 
             double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
+            double deltaY = to.getY() - from.getY();
 
 
             double velocity = Math.hypot(user.getVelocityProcessor().velocityX, user.getVelocityProcessor().velocityZ);
-
-            double prediction = velocity;
 
             int precision = String.valueOf((int) Math.abs(MathUtil.hypot(user.getMovementData().getTo().getX(), user.getMovementData().getTo().getZ()))).length();
 
@@ -113,6 +116,8 @@ public class VelocityB extends Check {
                 friction = 0.026F;
             }
 
+            double prediction = velocity;
+
             if (f >= 1.0E-4F) {
                 f = (float) Math.sqrt(f);
                 if (f < 1.0F) {
@@ -125,22 +130,30 @@ public class VelocityB extends Check {
                 float f2 = (float) Math.cos(to.getYaw() * (float) Math.PI / 180.0F);
                 float motionXAdd = (strafe * f2 - forward * f1);
                 float motionZAdd = (forward * f2 + strafe * f1);
-                prediction -= Math.hypot(motionXAdd, motionZAdd);
+                prediction -= (Math.hypot(motionXAdd, motionZAdd) * 2);
             }
+
+
 
             if (user.getMiscData().getSpeedPotionTicks() > 0) {
                 prediction -= (user.getMiscData().getSpeedPotionEffectLevel() * 0.03F);
             }
 
-            double fullVelocity = (deltaXZ / prediction);
 
-            if (user.getVelocityData().getVelocityTicks() == 3) {
-                if (!user.getMovementData().isClientGround()) {
+            double fullVelocity = (deltaXZ / lastVelocity);
 
-                  //  Bukkit.broadcastMessage("" + fullVelocity);
+            if (deltaY >= 0.0799 && deltaY <= 0.314) {
+                fullVelocity += 0.1;
+            }
+
+            if (user.getVelocityData().getVelocityTicks() == 2 && user.getConnectedTick() > 100) {
+                if (fullVelocity <= 0.995 && fullVelocity >= 0) {
+                    handleDetection(user, "Horizontal Velocity -> " + (deltaXZ / lastVelocity) + "%" + " "+deltaY);
                 }
             }
+
             lastVelocity = prediction;
+
             lastDeltaXZ = deltaXZ;
         }
     }

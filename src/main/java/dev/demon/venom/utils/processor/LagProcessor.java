@@ -170,6 +170,7 @@ public class LagProcessor {
                 sentKPTest = System.currentTimeMillis();
                 expectingC03 = true;
 
+                this.checkPingKick();
 
                 this.transactionMap.put(this.transactionID, System.currentTimeMillis());
 
@@ -264,6 +265,23 @@ public class LagProcessor {
                 }
 
             }
+        }
+    }
+
+    private void checkPingKick() {
+
+        if (user.getTick() > 150) {
+
+            int maxPing = 750;
+
+            if ((this.transactionPing > maxPing || this.keepAlivePing > maxPing)) {
+                if (kickBullshit++ > 5) {
+                    RunUtils.task(() -> user.getPlayer().kickPlayer("Timed out."));
+                }
+            } else {
+                kickBullshit = 0;
+            }
+
         }
     }
 

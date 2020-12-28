@@ -1,51 +1,43 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.BlockDigEvent;
+import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
-import dev.demon.venom.utils.math.Verbose;
-import org.bukkit.entity.Player;
+import dev.demon.venom.utils.math.MathUtil;
+import org.bukkit.entity.Flying;
 
-
-@CheckInfo(name = "Killaura", type = "D", banvl = 10)
 public class KillauraD extends Check {
 
-    private int attack, miss, ticks;
-    private Verbose verbose = new Verbose();
+    public KillauraD(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
+
+    private long lastFlying;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof UseEntityEvent) {
-            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                if (((UseEntityEvent) e).getEntity() instanceof Player) {
-                    double yawDiff = (user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
-                    attack++;
+        if (e instanceof FlyingInEvent) {
+            lastFlying = System.currentTimeMillis();
+        }
+        if (e instanceof BlockDigEvent) {
+            if (((BlockDigEvent) e).getAction() == WrappedInBlockDigPacket.EnumPlayerDigType.RELEASE_USE_ITEM) {
+                if (user.getPlayer().getItemInHand() != null
+                        && user.getMiscData().isSword(user.getPlayer().getItemInHand())) {
 
-                    double ratio = Math.abs((attack - miss) / user.getInBoxTicks());
-
-                    if (ratio <= 0.3 && yawDiff > 2.5 && user.getPlayer().getLocation().distance(((UseEntityEvent) e).getEntity().getLocation()) > 2.8) {
-                        if (verbose.flag(20, 1000L)) {
-                            alert(user, false, "R -> " + ratio + " Y -> " + yawDiff);
+                    if (MathUtil.isPost(lastFlying)) {
+                        if (violation++ > 10) {
+                            handleDetection(user, "Sent block dig packet late.");
                         }
+                    } else {
+                        violation = 0;
                     }
                 }
-            }
-        }
-        if (e instanceof ArmAnimationEvent) {
-            miss++;
-        }
-        if (e instanceof FlyingInEvent) {
-            ticks++;
-
-            if (ticks >= 100) {
-                attack = 0;
-                miss = 0;
-                user.setInBoxTicks(0);
             }
         }
     }

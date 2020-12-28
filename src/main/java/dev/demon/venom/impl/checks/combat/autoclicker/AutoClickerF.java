@@ -1,23 +1,23 @@
 package dev.demon.venom.impl.checks.combat.autoclicker;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
-import dev.demon.venom.impl.events.inevents.BlockDigEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.math.MathUtil;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CheckInfo(name = "Clicker", type = "F", banvl = 30)
 public class AutoClickerF extends Check {
 
+    public AutoClickerF(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
+
     private int movements;
-    private final List<Integer> delays = new ArrayList<>();
+    private List<Integer> delays = new ArrayList<>();
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
@@ -25,26 +25,22 @@ public class AutoClickerF extends Check {
             if (movements < 10) {
                 delays.add(movements);
 
-                if (delays.size() == 50) {
-                    double kurtosis = MathUtil.getKurtosis(delays);
+                if (delays.size() == 1000) {
+                    int outliers = (int) delays.stream()
+                            .filter(delay -> delay > 3)
+                            .count();
 
-
-                    if (kurtosis > 20 || Double.isNaN(kurtosis)) {
-                        if (violation++ > 1) {
-                            alert(user, true,"K -> "+kurtosis);
+                    if (outliers < 8) {
+                        if (violation++ > 3) {
+                            handleDetection(user, "Flaw within AutoClickers, O -> "+outliers);
                         }
-                    } else violation -= Math.min(violation, 0.125);
-
+                    } else violation -= Math.min(violation, 0.5);
                     delays.clear();
                 }
             }
             movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
-            if (user.getMovementData().isBreakingOrPlacingBlock()) {
-                violation = 0;
-                delays.clear();
-            }
         }
     }
 }

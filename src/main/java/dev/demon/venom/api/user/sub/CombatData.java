@@ -31,6 +31,16 @@ public class CombatData {
 
     public CombatData(User user) {
         this.user = user;
+        respawnTimer = new EventTimer(20, user);
+        shootTimer = new EventTimer(20, user);
+        deathTimer = new EventTimer(20, user);
+        bowDamageTimer = new EventTimer(20, user);
+        entitySwitchTimer = new EventTimer(20, user);
+        useEntityTimer = new EventTimer(20, user);
+        connectionVelocitySentTimer = new EventTimer(20, user);
+        randomDamageTimer = new EventTimer(20, user);
+        attackedTimer = new EventTimer(20, user);
+        fireDamageTimer = new EventTimer(20, user);
     }
 
     public boolean hasBowBoosted() {

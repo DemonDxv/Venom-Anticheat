@@ -1,35 +1,36 @@
 package dev.demon.venom.impl.checks.combat.autoclicker;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
-import dev.demon.venom.impl.events.inevents.BlockDigEvent;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import org.bukkit.Bukkit;
 
-
-@CheckInfo(name = "Clicker", type = "A", banvl = 3)
 public class AutoClickerA extends Check {
-    private int ticks, cps;
+
+    public AutoClickerA(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
+
+    private int movements;
+    private int cps;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
-            if (++ticks == 20) {
-                if (cps >= 22) {
-                    alert(user, false,"C -> " + cps);
+            if (++movements == 20) {
+                if (cps > 20) {
+                    handleDetection(user, "CPS -> "+cps);
                 }
-                ticks = cps = 0;
+                movements = cps = 0;
             }
-        } else if (e instanceof ArmAnimationEvent) {
-            cps++;
         }
-
-        if (e instanceof BlockDigEvent || e instanceof BlockPlaceEvent) {
-            ticks = 0;
-            cps = 0;
+        if (e instanceof ArmAnimationEvent) {
+            cps++;
+            if (user.getMovementData().isBreakingOrPlacingBlock() || user.getMiscData().getLastBlockPlaceTick() < 20) {
+                cps = 0;
+            }
         }
     }
 }

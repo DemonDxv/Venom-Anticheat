@@ -1,41 +1,52 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
 import dev.demon.venom.utils.math.Verbose;
+import org.bukkit.entity.Player;
 
-@CheckInfo(name = "Killaura", type = "J", banvl = 5)
 public class KillauraJ extends Check {
 
-    private double lastYawDelta, lastLastYawDelta;
-    private Verbose verbose = new Verbose();
+    public KillauraJ(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
-    /** Credits To FlyCode **/
+    private int attack, miss, ticks;
+    private Verbose verbose = new Verbose();
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof UseEntityEvent) {
             if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                double yawDelta = Math.abs(user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+                if (((UseEntityEvent) e).getEntity() instanceof Player) {
+                    double yawDiff = (user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+                    attack++;
 
-                double delta = Math.abs(yawDelta - lastYawDelta);
-                double lastDelta = Math.abs(lastYawDelta - lastLastYawDelta);
+                    double ratio = Math.abs((attack - miss) / user.getInBoxTicks());
 
-                if (delta > 0.0 && lastDelta > 0.0 && !user.isUsingNewOptifine()) {
-
-                    boolean small = !(delta > 0.001);
-
-                    if (delta < 0.099 && lastDelta > 0.65 && !small && verbose.flag((delta < 0.060 ? 7 : 3), 1000L * 2L)) {
-                        alert(user, false,"D -> " + delta, " LD -> " + lastDelta);
+                    if (ratio <= 0.3 && yawDiff > 2.5 && user.getPlayer().getLocation().distance(((UseEntityEvent) e).getEntity().getLocation()) > 2.8) {
+                        if (verbose.flag(20, 1000L)) {
+                            handleDetection(user, "Ratio -> " + ratio + " Yawdiff -> " + yawDiff);
+                        }
                     }
                 }
+            }
+        }
+        if (e instanceof ArmAnimationEvent) {
+            miss++;
+        }
+        if (e instanceof FlyingInEvent) {
+            ticks++;
 
-                lastLastYawDelta = lastYawDelta;
-                lastYawDelta = yawDelta;
+            if (ticks >= 100) {
+                attack = 0;
+                miss = 0;
+                user.setInBoxTicks(0);
             }
         }
     }

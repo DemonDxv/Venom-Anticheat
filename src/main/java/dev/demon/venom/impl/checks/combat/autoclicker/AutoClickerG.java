@@ -1,52 +1,49 @@
 package dev.demon.venom.impl.checks.combat.autoclicker;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
 import dev.demon.venom.impl.events.inevents.BlockDigEvent;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CheckInfo(name = "Clicker", type = "G", banvl = 10)
 public class AutoClickerG extends Check {
 
-    private int movements;
-    private final List<Integer> delays = new ArrayList<>(250);
+    public AutoClickerG(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
+    private int movements;
+    private int outliers, lastOutliers;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof ArmAnimationEvent) {
+        if (e instanceof ArmAnimationEvent || e instanceof BlockDigEvent) {
             if (movements < 10) {
-                delays.add(movements);
+                if (movements > 3 && movements < 6) {
+                    outliers++;
+                }
+                double outlierDiff = Math.abs(outliers - lastOutliers);
 
-                if (delays.size() == 250) {
-
-                    int outliers = (int) delays.stream()
-                            .filter(delay -> delay > 3)
-                            .count();
-
-                    if (outliers >= 1 && outliers <= 2) {
-                        if (violation++ > 3) {
-                            alert(user, true,"O -> "+outliers);
-                        }
-                    } else violation -= Math.min(violation, 0.5);
-
-                    delays.clear();
+                if (outlierDiff != outliers && outliers == 1) {
+                    if ((violation += 0.5f) >= 2) {
+                        handleDetection(user, "O -> " + outliers + " OD -> " + outlierDiff);
+                    }
+                } else {
+                    violation -= Math.min(violation, 0.1);
                 }
             }
-            movements = 0;
+            lastOutliers = outliers;
+            outliers = movements = 0;
         } else if (e instanceof FlyingInEvent) {
             movements++;
             if (user.getMovementData().isBreakingOrPlacingBlock()) {
                 violation = 0;
-                delays.clear();
+                outliers = 0;
+                lastOutliers = 0;
             }
         }
     }

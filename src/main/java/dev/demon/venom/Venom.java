@@ -1,5 +1,6 @@
 package dev.demon.venom;
 
+import dev.demon.venom.api.checknew.CheckManager;
 import dev.demon.venom.api.event.EventManager;
 import dev.demon.venom.api.mongo.MongoManager;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
@@ -18,12 +19,14 @@ import dev.demon.venom.utils.command.CommandUtils;
 import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.processor.EntityProcessor;
+import dev.demon.venom.utils.processor.LagProcessor;
 import dev.demon.venom.utils.reflection.CraftReflection;
 import dev.demon.venom.utils.time.RunUtils;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -55,7 +58,7 @@ public class Venom extends JavaPlugin {
     private BukkitListeners bukkitListener;
     private EventManager eventManager;
     private CommandManager commandManager;
-    private MongoManager mongoManager;
+ ///   private MongoManager mongoManager;
 
     private int currentTicks, lagStartCheck;
     private long lastServerTick, lastServerLag, lastServerStart;
@@ -68,7 +71,7 @@ public class Venom extends JavaPlugin {
     public static int banVL;
 
     public static String banMessage, banCommand, alertsMessage, alertsDev, permissionAlert, permissionPING,
-            permissionCMD, permissionINFO, key;
+            permissionCMD, permissionINFO;
 
     public static Boolean banEnabled, alertsEnabled, banMessageEnabled, enableDebug;
 
@@ -81,7 +84,7 @@ public class Venom extends JavaPlugin {
         cfile = new File(getDataFolder(), "config.yml");
         saveDefaultConfig();
         loadConfiguration();
-        mongoManager = new MongoManager();
+       // mongoManager = new MongoManager();
 
         bukkitVersion = Bukkit.getServer().getClass().getPackage().getName().substring(23);
 
@@ -102,7 +105,7 @@ public class Venom extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().addChannel(player));
 
 
-        RunUtils.taskTimer(() -> {
+        RunUtils.taskTimerAsync(() -> {
             for (World world : Bukkit.getWorlds()) {
                 Object vWorld = CraftReflection.getVanillaWorld(world);
 
@@ -125,7 +128,11 @@ public class Venom extends JavaPlugin {
         this.blockBoxManager = new BlockBoxManager();
         this.boxes = new BoundingBoxes();
 
-        getLogger().info("Venom Anticheat has been Successfully Loaded.");
+        this.getEventManager().setup();
+
+        new LagProcessor().startPingCheck();
+
+        getLogger().info(ChatColor.GREEN + "Venom Anticheat has been successfully loaded.");
 
         super.onEnable();
     }
@@ -136,6 +143,8 @@ public class Venom extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().removeChannel(player));
         executorService.shutdownNow();
         commandManager.getCommandList().forEach(CommandUtils::unRegisterBukkitCommand);
+
+        getLogger().info(ChatColor.RED + "Venom Anticheat has been successfully unloaded.");
     }
 
 
@@ -159,7 +168,7 @@ public class Venom extends JavaPlugin {
         permissionINFO = instance.getConfig().getString("Permissions.info");
 
 
-        key = instance.getConfig().getString("License.key");
+        //key = instance.getConfig().getString("License.key");
 
     }
 }

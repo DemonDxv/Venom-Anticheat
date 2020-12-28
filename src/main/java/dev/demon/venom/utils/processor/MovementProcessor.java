@@ -4,10 +4,7 @@ import dev.demon.venom.Venom;
 import dev.demon.venom.api.tinyprotocol.api.NMSObject;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockPlacePacket;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInEntityActionPacket;
-import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
+import dev.demon.venom.api.tinyprotocol.packet.in.*;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutEntityEffectPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutPositionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
@@ -38,6 +35,7 @@ import org.bukkit.block.BlockFace;
 
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created on 05/01/2020 Package me.jumba.sparky.util.processor
@@ -57,6 +55,10 @@ public class MovementProcessor {
 
     private TickTimer timer = new TickTimer(5);
 
+    private short inventoryCloseTransction = (short) MathUtil.getRandomInteger(1000, 9000);
+    private List<Short> inventoryTransactions = new CopyOnWriteArrayList<>();
+    private boolean expectingInventoryClose;
+
     private double lastGroundY;
 
     public void update(Object packet, String type) {
@@ -73,7 +75,7 @@ public class MovementProcessor {
                     if (user.isInBlock() && user.getMovementData().getTo() != null) {
                         double deltaY = (user.getMovementData().getTo().getY() - this.lastGroundY);
                         if (deltaY <= .8) {
-                            user.getMovementData().setLastTeleportInBlock(System.currentTimeMillis());
+                            user.getBlockData().lastInsideBlockTimer.reset();
                         }
                     }
 
@@ -87,6 +89,8 @@ public class MovementProcessor {
 
 
                     user.getMovementData().setLastServerPostion(user.getConnectedTick());
+
+
                 } else {
                     user.getMovementData().setLastServerPostionFull(user.getConnectedTick());
                 }
@@ -103,65 +107,65 @@ public class MovementProcessor {
                         WrappedInBlockPlacePacket wrappedInBlockPlacePacket = new WrappedInBlockPlacePacket(packet, user.getPlayer());
 
                         Block block = BlockUtil.getBlock(new Location(user.getPlayer().getWorld(), wrappedInBlockPlacePacket.getPosition().getX(),
-                                    wrappedInBlockPlacePacket.getPosition().getY(),
-                                    wrappedInBlockPlacePacket.getPosition().getZ()));
+                                wrappedInBlockPlacePacket.getPosition().getY(),
+                                wrappedInBlockPlacePacket.getPosition().getZ()));
 
-                            Block blockBelow = BlockUtil.getBlock(new Location(user.getPlayer().getWorld(),
-                                    wrappedInBlockPlacePacket.getPosition().getX(),
-                                    wrappedInBlockPlacePacket.getPosition().getY() - 1,
-                                    wrappedInBlockPlacePacket.getPosition().getZ()));
+                        Block blockBelow = BlockUtil.getBlock(new Location(user.getPlayer().getWorld(),
+                                wrappedInBlockPlacePacket.getPosition().getX(),
+                                wrappedInBlockPlacePacket.getPosition().getY() - 1,
+                                wrappedInBlockPlacePacket.getPosition().getZ()));
 
 
-                            if (block != null && blockBelow != null && blockBelow.getType() == Material.AIR) {
+                        if (block != null && blockBelow != null && blockBelow.getType() == Material.AIR) {
 
-                                Block blockBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -1, 0));
-                                Block blockBelowBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -2, 0));
+                            Block blockBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -1, 0));
+                            Block blockBelowBelowPlayer = BlockUtil.getBlock(user.getPlayer().getLocation().clone().add(0, -2, 0));
 
-                                if (blockBelowPlayer == null || blockBelowBelowPlayer == null) {
-                                    return;
-                                }
-                                if (user.getMiscData().getLastBlockPlaced() != null && blockBelowPlayer.getType() != Material.AIR && blockBelowBelowPlayer.getType() == Material.AIR) {
-                                    Block lastBlock = user.getMiscData().getLastBlockPlaced();
+                            if (blockBelowPlayer == null || blockBelowBelowPlayer == null) {
+                                return;
+                            }
+                            if (user.getMiscData().getLastBlockPlaced() != null && blockBelowPlayer.getType() != Material.AIR && blockBelowBelowPlayer.getType() == Material.AIR) {
+                                Block lastBlock = user.getMiscData().getLastBlockPlaced();
 
-                                    if (block.getLocation().distanceSquared(lastBlock.getLocation()) < 2) {
+                                if (block.getLocation().distanceSquared(lastBlock.getLocation()) < 2) {
 
-                                        List<Block> lastTwoTargetBlocks = user.getPlayer().getLastTwoTargetBlocks((HashSet<Byte>) null, 100);
+                                    List<Block> lastTwoTargetBlocks = user.getPlayer().getLastTwoTargetBlocks((HashSet<Byte>) null, 100);
 
-                                        if (!(lastTwoTargetBlocks.size() != 2
-                                                || !lastTwoTargetBlocks.get(1).getType().isOccluding())) {
-                                            Block targetBlock = lastTwoTargetBlocks.get(1);
-                                            Block adjacentBlock = lastTwoTargetBlocks.get(0);
+                                    if (!(lastTwoTargetBlocks.size() != 2
+                                            || !lastTwoTargetBlocks.get(1).getType().isOccluding())) {
+                                        Block targetBlock = lastTwoTargetBlocks.get(1);
+                                        Block adjacentBlock = lastTwoTargetBlocks.get(0);
 
-                                            if (targetBlock.getFace(adjacentBlock) == BlockFace.UP) {
-                                                valid = true;
-                                            }
+                                        if (targetBlock.getFace(adjacentBlock) == BlockFace.UP) {
+                                            valid = true;
                                         }
-
-                                        lastTwoTargetBlocks.clear();
                                     }
-                                }
 
-                                if (BlockUtil.isHalfBlock(block)) {
-                                    valid = false;
-                                    user.getMiscData().setScaffoldProcessorIgnoreTicks(5);
+                                    lastTwoTargetBlocks.clear();
                                 }
+                            }
 
-                                if (user.getMiscData().getScaffoldProcessorIgnoreTicks() > 0) {
-                                    user.getMiscData().setScaffoldProcessorIgnoreTicks(user.getMiscData().getScaffoldProcessorIgnoreTicks() - 1);
-                                    valid = false;
-                                }
+                            if (BlockUtil.isHalfBlock(block)) {
+                                valid = false;
+                                user.getMiscData().setScaffoldProcessorIgnoreTicks(5);
+                            }
 
-                                user.getMiscData().setLastBlockPlaced(block);
-                            } else {
+                            if (user.getMiscData().getScaffoldProcessorIgnoreTicks() > 0) {
+                                user.getMiscData().setScaffoldProcessorIgnoreTicks(user.getMiscData().getScaffoldProcessorIgnoreTicks() - 1);
                                 valid = false;
                             }
+
+                            user.getMiscData().setLastBlockPlaced(block);
                         } else {
                             valid = false;
                         }
-
-                        user.getMiscData().setBlockPlaceValidScaffold(valid);
+                    } else {
+                        valid = false;
                     }
+
+                    user.getMiscData().setBlockPlaceValidScaffold(valid);
                 }
+            }
 
             if (type.equalsIgnoreCase(Packet.Client.BLOCK_PLACE)) {
 
@@ -169,7 +173,6 @@ public class MovementProcessor {
 
                 user.getMovementData().setLastDig(System.currentTimeMillis());
 
-                user.getMovementData().setBreakingOrPlacingBlock(true);
                 user.getMovementData().setBreakingOrPlacingTime(System.currentTimeMillis());
             }
 
@@ -186,6 +189,15 @@ public class MovementProcessor {
                     user.getMovementData().setBreakingOrPlacingBlock(false);
                 } else if (wrappedInBlockDigPacket.getAction() == WrappedInBlockDigPacket.EnumPlayerDigType.ABORT_DESTROY_BLOCK) {
                     user.getMovementData().setBreakingOrPlacingBlock(false);
+                }
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.CLIENT_COMMAND)) {
+                WrappedInClientCommand wrappedInClientCommand = new WrappedInClientCommand(packet, user.getPlayer());
+
+                if (wrappedInClientCommand.getCommand() == WrappedInClientCommand.EnumClientCommand.OPEN_INVENTORY_ACHIEVEMENT) {
+                    Bukkit.broadcastMessage("1");
+                    user.getMiscData().setInventoryOpen(true);
                 }
             }
 
@@ -232,6 +244,37 @@ public class MovementProcessor {
                 }
             }
 
+            if (type.equalsIgnoreCase(Packet.Client.CLOSE_WINDOW)) {
+
+                if (!this.expectingInventoryClose) {
+                    this.expectingInventoryClose = true;
+
+                    TinyProtocolHandler.sendPacket(user.getPlayer(), new WrappedOutTransaction(0, this.inventoryCloseTransction, false).getObject());
+                    this.inventoryTransactions.add(this.inventoryCloseTransction);
+
+                    if (this.inventoryCloseTransction < 999) {
+                        this.inventoryCloseTransction = (short) MathUtil.getRandomInteger(1000, 9000);
+                    }
+                }
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
+                if (this.expectingInventoryClose) {
+
+                    WrappedInTransactionPacket wrappedInTransactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
+                    short ID = wrappedInTransactionPacket.getAction();
+
+
+                    if (this.inventoryTransactions.contains(ID)) {
+                        this.expectingInventoryClose = false;
+
+                        user.getMiscData().setInventoryOpen(false);
+
+                        this.inventoryTransactions.remove(ID);
+                    }
+                }
+            }
+
             if (type.equalsIgnoreCase(Packet.Client.POSITION)
                     || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK)
                     || type.equalsIgnoreCase(Packet.Client.LOOK)
@@ -248,6 +291,11 @@ public class MovementProcessor {
                         && user.getMovementData().getTo().getY() % 0.015625 == 0.0
                         && user.getMovementData().getFrom().getY() % 0.015625 == 0.0) {
                     this.lastGroundY = wrappedInFlyingPacket.getY();
+                }
+
+                if (user.getCombatData().getRespawnTimer().hasNotPassed(5)) {
+                    user.getMiscData().setInventoryOpen(false);
+                    user.getPlayer().closeInventory();
                 }
 
 
@@ -354,6 +402,10 @@ public class MovementProcessor {
                         user.getMovementData().setFrom(user.getMovementData().getTo().clone());
                     }
 
+                    if (user.getMovementData().getToPacket() != null) {
+                        user.getMovementData().setFromPacket(user.getMovementData().getTo().clone());
+                    }
+
 
                     PlayerLocation lastLocation = user.getMovementData().getLocation();
                     PlayerLocation lastLocation2 = user.getMovementData().getPreviousLocation();
@@ -374,12 +426,15 @@ public class MovementProcessor {
                         user.getMovementData().getTo().setClientGround(wrappedInFlyingPacket.isGround());
                         user.getMovementData().setLastPos(System.currentTimeMillis());
 
+                        user.getMovementData().getToPacket().setX(user.getPlayer().getLocation().getX());
+                        user.getMovementData().getToPacket().setY(user.getPlayer().getLocation().getY());
+                        user.getMovementData().getToPacket().setZ(user.getPlayer().getLocation().getZ());
+                        user.getMovementData().getToPacket().setClientGround(wrappedInFlyingPacket.isGround());
+
                         user.getMovementData().setLastOnGround(user.getMovementData().isOnGround());
 
-                        //    user.getMovementData().locationDataQueue.add(new DevLocation(wrappedInFlyingPacket.getX(), wrappedInFlyingPacket.getY(), wrappedInFlyingPacket.getZ(), wrappedInFlyingPacket.getYaw(), wrappedInFlyingPacket.getPitch()));
-                        //  user.getMovementData().setLocation(new DevLocation(wrappedInFlyingPacket.getX(), wrappedInFlyingPacket.getY(), wrappedInFlyingPacket.getZ(),
-                        //          wrappedInFlyingPacket.isLook() ? wrappedInFlyingPacket.getYaw() : lastLocation.getYaw(),
-                        //          wrappedInFlyingPacket.isLook() ? wrappedInFlyingPacket.getPitch() : lastLocation.getPitch()));
+
+                        user.previousPreviousLocations.add(user.getMovementData().getPreviousLocation());
 
 
                         CustomLocation customLocation = new CustomLocation(wrappedInFlyingPacket.getX(), wrappedInFlyingPacket.getY(), wrappedInFlyingPacket.getZ());
@@ -429,6 +484,16 @@ public class MovementProcessor {
                         user.getMovementData().getTo().setPitch(wrappedInFlyingPacket.getPitch());
                         user.getMovementData().getTo().setYaw(wrappedInFlyingPacket.getYaw());
 
+                        user.getMovementData().getToPacket().setPitch(user.getMovementData().getLocation().getPitch());
+                        user.getMovementData().getToPacket().setYaw(user.getMovementData().getLocation().getYaw());
+
+                        user.getMovementData().setPreviousLocation(lastLocation);
+
+                        if (user.getMovementData().getPreviousLocation() != null) {
+                            user.getMovementData().setPreviousPreviousLocation(user.getMovementData().getPreviousLocation());
+                        }
+
+
                         updateSensitityPrediction();
                     }
 
@@ -477,6 +542,7 @@ public class MovementProcessor {
             }
         }
     }
+
     private void updateBlockCheck() {
 
         boolean work = true;

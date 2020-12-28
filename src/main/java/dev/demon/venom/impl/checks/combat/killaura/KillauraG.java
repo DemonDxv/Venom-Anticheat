@@ -1,38 +1,35 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
-import org.bukkit.block.Block;
+import dev.demon.venom.utils.math.MathUtil;
+import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
-@CheckInfo(name = "Killaura", type = "G", banvl = 50)
 public class KillauraG extends Check {
 
-    private double lastYaw, lastPitch;
+    public KillauraG(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof UseEntityEvent) {
-            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
+        if (e instanceof FlyingInEvent) {
+            double deltaPitch = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
 
-                double pitch = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
-                double yaw = Math.abs(user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
-
-                if (yaw > 3) {
-                    if (yaw == lastYaw || pitch == lastPitch) {
-                        if (violation++ > 2) {
-                            alert(user, false, "Consistency within the yaw and or pitch");
-                        }
-                    } else violation -= Math.min(violation, 0.25);
+            if (TimeUtils.elapsed(user.getCombatData().getLastUseEntityPacket()) < 100L) {
+                if (deltaPitch == MathUtil.round(deltaPitch, 1) && deltaPitch > 0.0) {
+                    handleDetection(user, "Rounded Pitch");
                 }
-
-                lastYaw = yaw;
-                lastPitch = pitch;
             }
         }
     }

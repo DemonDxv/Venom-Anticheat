@@ -3,16 +3,11 @@ package dev.demon.venom.utils.math;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AtomicDouble;
 
-import dev.demon.venom.Venom;
-import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.events.ServerShutdownEvent;
 import dev.demon.venom.utils.box.BoundingBox;
-import dev.demon.venom.utils.command.CommandUtils;
 import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.time.TimeUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -24,6 +19,7 @@ import org.bukkit.util.Vector;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class MathUtil {
 
@@ -75,6 +71,10 @@ public class MathUtil {
 
     public static int getRandomInteger(int maximum, int minimum) {
         return ((int) (Math.random() * (maximum - minimum))) + minimum;
+    }
+
+    public static long toNanos(long number) {
+        return TimeUnit.MILLISECONDS.toNanos(number);
     }
 
     // Check for number prime or not
@@ -164,6 +164,20 @@ public class MathUtil {
         }
 
         return tuple;
+    }
+
+    public static double getSigmoidGraph(final Collection<? extends Number> data) {
+
+        final List<Double> values = new ArrayList<>();
+
+        for (final Number number : data) {
+            values.add(number.doubleValue());
+        }
+
+        double std = getStandardDeviation(values);
+
+
+        return 1 / (1 + Math.exp(-std));
     }
 
     public static double getMedian(final List<Double> data) {

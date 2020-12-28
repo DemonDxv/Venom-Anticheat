@@ -22,6 +22,7 @@ public class PlayerLocation {
     private long timeStamp;
 
 
+
     public PlayerLocation(double x, double y, double z, float yaw, float pitch) {
         this.x = x;
         minX = x - 0.41;
@@ -75,6 +76,13 @@ public class PlayerLocation {
         double dz = Math.min(Math.abs(location.z - minZ), Math.abs(lastLocation.z - maxZ));
 
         return Math.sqrt(Math.pow(dx, 2.0) + Math.pow(dz, 2.0));
+    }
+
+
+    public double getDistanceSquaredCentered(PlayerLocation hitbox, PlayerLocation lastLocation) {
+        final double dx = Math.pow(Math.min(Math.abs(hitbox.x - this.minX), Math.abs(lastLocation.x - this.maxX)), 2.0);
+        final double dz = Math.pow(Math.min(Math.abs(hitbox.z - this.minZ), Math.abs(lastLocation.z - this.maxZ)), 2.0);
+        return dx + dz;
     }
 
 

@@ -1,45 +1,54 @@
 package dev.demon.venom.impl.checks.combat.velocity;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.time.TimeUtils;
+import org.bukkit.Bukkit;
 
-@CheckInfo(name = "Velocity", type = "E", banvl = 3)
 public class VelocityE extends Check {
 
-    private double lastDeltaY;
+    public VelocityE(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingInEvent && user.getConnectedTick() > 250) {
+        if (e instanceof FlyingInEvent) {
 
             if (user.generalCancel()
-                    || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
-                    || TimeUtils.elapsed(user.getCombatData().getLastEntityDamageAttack()) > 1000L
-                    || TimeUtils.elapsed(user.getCombatData().getLastPoisonDamage()) < 1000L
-                    || TimeUtils.elapsed(user.getCombatData().getLastFireDamage()) < 1000L) {
+                    || user.getMovementData().isCollidesVertically()
+                    || user.getMovementData().isCollidesHorizontally()
+                    || user.getMovementData().getFallDamageTimer().hasNotPassed(20)
+                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L) {
                 return;
             }
 
             double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
-            double velocityY = user.getVelocityProcessor().getVerticalTransaction();
 
-            velocityY -= 0.08D;
-            velocityY *= 0.9800000190734863D;
+            double vertical = (user.getVelocityProcessor().getVertical() - 0.08D) * 0.9800000190734863D;
 
-            double ratio = Math.abs(lastDeltaY / velocityY);
+            double verticalLast = (vertical - 0.08D) * 0.9800000190734863D;
 
-            if (user.getVelocityData().getVelocityTicks() == 3) {
-                if (ratio <= 0.9998 && deltaY <= 0.42F && velocityY < 1 && user.getMovementData().isClientGround()) {
-                    alert(user, true,"VV -> "+ratio + "%");
-                }
+            verticalLast -= 0.08D;
+            verticalLast *= 0.9800000190734863D;
+
+            double ratio = Math.abs(deltaY / verticalLast);
+
+            if (user.getPlayer().getFallDistance() > 0) {
+                violation = 0;
             }
 
-            lastDeltaY = deltaY;
+            if (user.getVelocityData().getVelocityTicks() == 4 && user.getConnectedTick() > 250) {
+                if (ratio <= 0.9998 && ratio >= 0.03) {
+                    handleDetection(user, "Vertical Velocity -> " + ratio + "%");
+                } else if (ratio < 0.03) {
+                    if (violation++ > 5) {
+                        handleDetection(user, "Vertical Velocity -> " + ratio + "%");
+                    }
+                } else violation = 0;
+            }
         }
     }
 }

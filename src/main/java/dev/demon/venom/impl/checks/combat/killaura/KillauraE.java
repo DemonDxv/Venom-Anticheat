@@ -1,28 +1,45 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInBlockDigPacket;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.BlockDigEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
+import dev.demon.venom.impl.events.inevents.UseEntityEvent;
+import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
-import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
-@CheckInfo(name = "Killaura", type = "E", banvl = 25)
 public class KillauraE extends Check {
+
+    public KillauraE(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
+
+    private final double offset = Math.pow(2.0, 24.0);
+
+    private double lastPitchDelta;
+
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof FlyingInEvent) {
-            double pitch = Math.abs(user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch());
-            double yaw = Math.abs(user.getMovementData().getTo().getYaw() - user.getMovementData().getFrom().getYaw());
+        if (e instanceof UseEntityEvent) {
+            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
+                double deltaPitch = user.getMovementData().getTo().getPitch() - user.getMovementData().getFrom().getPitch();
 
-            boolean primePitch = MathUtil.isPrime((int) pitch), primeYaw = MathUtil.isPrime((int) yaw);
+                long gcd = MathUtil.gcd((long) (deltaPitch * offset), (long) (lastPitchDelta * offset));
 
-            if (primePitch && primeYaw) {
-                if (violation++ > 6.2) {
-                    alert(user, false, "Prime Number Check");
+                if (deltaPitch != lastPitchDelta && gcd < 131072L && gcd >= 0) {
+                    if (violation++ > 10) {
+                        handleDetection(user, "GCD -> " + gcd);
+                    }
+                } else {
+                    violation -= Math.min(violation, 0.25);
                 }
-            } else violation -= Math.min(violation, 0.75);
+
+                lastPitchDelta = deltaPitch;
+            }
         }
     }
 }

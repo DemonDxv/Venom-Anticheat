@@ -1,24 +1,24 @@
 package dev.demon.venom.impl.checks.combat.autoclicker;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
-import dev.demon.venom.impl.events.inevents.BlockDigEvent;
-import dev.demon.venom.impl.events.inevents.BlockPlaceEvent;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
-
+import dev.demon.venom.utils.math.MathUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CheckInfo(name = "Clicker", type = "E" , banvl = 30)
 public class AutoClickerE extends Check {
 
-    private int movements;
-    private final List<Integer> delays = new ArrayList<>(1000);
+    public AutoClickerE(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
+    private int movements;
+    private List<Integer> delays = new ArrayList<>();
+    private double lastStDev = -1;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
@@ -26,19 +26,18 @@ public class AutoClickerE extends Check {
             if (movements < 10) {
                 delays.add(movements);
 
-                if (delays.size() == 1000) {
+                if (delays.size() == 50) {
+                    double std = MathUtil.getStandardDeviation(delays);
 
-                    int outliers = (int) delays.stream()
-                            .filter(delay -> delay > 3)
-                            .count();
-
-                    if (outliers < 8) {
-                        if (violation++ > 4) {
-                            alert(user, true,"O -> "+outliers);
+                    if (Math.abs(std - lastStDev) < 0.05) {
+                        if (violation++ > 5) {
+                            handleDetection(user, "Consistency Found Within Clicks? STD -> "+Math.abs(std - lastStDev));
                         }
-                    } else violation -= Math.min(violation, 0.5);
+                    } else violation -= Math.min(violation, 1);
+
 
                     delays.clear();
+                    lastStDev = std;
                 }
             }
             movements = 0;

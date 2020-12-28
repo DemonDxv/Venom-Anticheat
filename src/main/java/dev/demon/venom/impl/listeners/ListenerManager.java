@@ -10,7 +10,7 @@ public class ListenerManager {
     private List<AnticheatListener> listenerList = new ArrayList<>();
 
     public ListenerManager() {
-        addListener(new PacketListener());
+     //   addListener(new PacketListener());
         setup();
     }
 

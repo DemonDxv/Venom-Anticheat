@@ -1,15 +1,22 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
-import org.bukkit.Bukkit;
+import dev.demon.venom.utils.math.MathUtil;
+import dev.demon.venom.utils.time.TimeUtils;
 
-@CheckInfo(name = "Killaura", type = "I", banvl = 5)
+import java.util.ArrayList;
+import java.util.List;
+
 public class KillauraI extends Check {
+
+    public KillauraI(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
@@ -24,14 +31,14 @@ public class KillauraI extends Check {
                 double clientSens = user.getOldProcessors().getMouseX();
 
                 if (clientSens > 100000) {
-                    alert(user, false, "Head Snapping");
+                    handleDetection(user, "Head Snapping [1]");
                 }
 
                 if (deltaYaw > 0.0 && fix > 60.0) {
                     double snap = Math.abs(deltaYaw - fix);
 
                     if (snap < 0.70 && fix != 360 && deltaYaw > 99.99) {
-                        alert(user, true, "Head Snapping");
+                        handleDetection(user, "Head Snapping [2]");
                     }
                 }
             }

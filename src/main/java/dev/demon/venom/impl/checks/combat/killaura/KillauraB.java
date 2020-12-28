@@ -1,46 +1,34 @@
 package dev.demon.venom.impl.checks.combat.killaura;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.inevents.ArmAnimationEvent;
+import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.impl.events.inevents.UseEntityEvent;
-import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.math.MathUtil;
-import dev.demon.venom.utils.math.Verbose;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
-
-@CheckInfo(name = "Killaura", type = "B", banvl = 10)
 public class KillauraB extends Check {
 
-    private double lastDeltaXZ;
-    private Verbose verbose = new Verbose();
+    public KillauraB(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
+
+    private long lastFlying;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
-        if (e instanceof UseEntityEvent) {
-
-            if (((UseEntityEvent) e).getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                if (((UseEntityEvent) e).getEntity() instanceof Player) {
-                    CustomLocation to = user.getMovementData().getTo(), from = user.getMovementData().getFrom();
-
-
-                    double deltaXZ = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ());
-
-                    double differenceXZ = Math.abs(deltaXZ - lastDeltaXZ);
-
-
-                    if (user.getMovementData().isSprinting() && deltaXZ > MathUtil.getBaseSpeed(user.getPlayer()) && differenceXZ < 0.027) {
-                        if (verbose.flag(3, 750L)) {
-                            alert(user, false, "Keep Sprint");
-                        }
-                    }
-
-                    lastDeltaXZ = deltaXZ;
+        if (e instanceof FlyingInEvent) {
+            lastFlying = System.currentTimeMillis();
+        }
+        if (e instanceof ArmAnimationEvent) {
+            if (MathUtil.isPost(lastFlying)) {
+                if (violation++ > 10) {
+                    handleDetection(user, "Sent arm swing packet late.");
                 }
+            } else {
+                violation = 0;
             }
         }
     }

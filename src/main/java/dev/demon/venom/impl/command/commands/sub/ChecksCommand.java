@@ -1,8 +1,8 @@
 package dev.demon.venom.impl.command.commands.sub;
 
 import dev.demon.venom.Venom;
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckManager;
+import dev.demon.venom.api.checknew.CheckManager;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ChecksCommand {
@@ -24,8 +23,8 @@ public class ChecksCommand {
             if (user != null) {
 
                 Check foundCHeck = user.getChecks().parallelStream().filter(check ->
-                        check.getName().equalsIgnoreCase(args[1])
-                                && check.getType().equalsIgnoreCase(args[2])).findAny().orElse(null);
+                        check.checkname.equalsIgnoreCase(args[1])
+                                && check.checktype.equalsIgnoreCase(args[2])).findAny().orElse(null);
 
                 if (foundCHeck != null) {
 
@@ -36,11 +35,11 @@ public class ChecksCommand {
                     if (!disabledChecks.contains(combined)) {
                         disabledChecks.add(combined);
                         commandSender.sendMessage(  "Disabled check: " + ChatColor.RED + combined2);
-                        this.update(new Data(args[1], args[2], true));
+                        this.update(new Data(args[1], args[2], false));
                     } else {
                         disabledChecks.remove(combined);
                         commandSender.sendMessage("Enabled check: " + ChatColor.GREEN + combined2);
-                        this.update(new Data(args[1], args[2], false));
+                        this.update(new Data(args[1], args[2], true));
                     }
                 } else {
                     commandSender.sendMessage(ChatColor.RED+"[ERROR] No check found.");

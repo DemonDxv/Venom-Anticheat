@@ -1,38 +1,40 @@
 package dev.demon.venom.impl.checks.movement.speed;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.location.CustomLocation;
-import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.time.TimeUtils;
-import org.bukkit.Bukkit;
 
 import java.text.DecimalFormat;
 
-
-@CheckInfo(name = "Speed", type = "B", banvl = 10)
 public class SpeedB extends Check {
+
+    public SpeedB(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     private double lastDeltaXZ;
     private float friction, getAIMoveSpeed;
     private float friction2 = 0.91F;
 
-    /** Detecting speeds via Air Friction change, and Ground Friction change **/
+    /**
+     * Detecting speeds via Air Friction change, and Ground Friction change
+     **/
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
 
             if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
+                    || user.getBlockData().lastInsideBlockTimer.hasNotPassed(20)
+                    || user.getMovementData().getLastTeleportTimer().hasNotPassed(20)
+                    || !user.getMovementData().isChunkLoaded()
                     || user.generalCancel()
                     || user.getBlockData().liquidTicks > 0
                     || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
                     || user.getMiscData().isNearBoat()
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
                     || TimeUtils.elapsed(user.getCombatData().getLastRespawn()) < 1000L) {
                 return;
             }
@@ -111,7 +113,7 @@ public class SpeedB extends Check {
             if (user.getMovementData().isClientGround() || user.getMovementData().isLastClientGround()) {
                 if (difference > 0 && user.getConnectedTick() > 250) {
                     if (violation++ > 1) {
-                        alert(user, false, "Difference -> " + difference);
+                        handleDetection(user,  "Speed Difference -> " + difference);
                     }
                 } else {
                     violation -= Math.min(violation, 0.05);

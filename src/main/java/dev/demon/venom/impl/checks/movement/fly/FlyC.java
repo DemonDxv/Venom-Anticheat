@@ -1,63 +1,72 @@
 package dev.demon.venom.impl.checks.movement.fly;
 
-import dev.demon.venom.api.check.Check;
-import dev.demon.venom.api.check.CheckInfo;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.inevents.FlyingInEvent;
 import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Bukkit;
 
-@CheckInfo(name = "Fly", type = "C", banvl = 10)
 public class FlyC extends Check {
+    public FlyC(String checkname, String checktype, boolean experimental, int banVL, boolean enabled) {
+        super(checkname, checktype, experimental, banVL, enabled);
+    }
 
     private double lastDeltaY;
 
     @Override
     public void onHandle(User user, AnticheatEvent e) {
         if (e instanceof FlyingInEvent) {
+            if (user != null) {
+                if (user.generalCancel()
+                        || user.getLagProcessor().isLagging()
+                        || user.getBlockData().lastInsideBlockTimer.hasNotPassed(20)
+                        || user.getMovementData().getLastTeleportTimer().hasNotPassed(20)
+                        || user.getVelocityData().getVelocityTicks() < 20
+                        || user.getMovementData().getFallDamageTimer().hasNotPassed(10)
+                        || user.getBlockData().climbableTicks > 0
+                        || user.getBlockData().lastClimbableTimer.hasNotPassed(20)
+                        || !user.getMovementData().isChunkLoaded()) {
 
-            if (TimeUtils.elapsed(user.getMiscData().getLastBlockBreakCancel()) < 1000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleport()) < 5000L
-                    || user.generalCancel()
-                    || user.getBlockData().liquidTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastBlockCancel()) < 1000L
-                    || user.getMiscData().isNearBoat()
-                    || user.getBlockData().climbableTicks > 0
-                    || user.getMiscData().getMountedTicks() > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastMoutUpdate()) < 1000L
-                    || user.getBlockData().doorTicks > 0
-                    || TimeUtils.elapsed(user.getMiscData().getLastEjectVechielEject()) < 1000L
-                    || user.getBlockData().webTicks > 0
-                    || user.getBlockData().bedTicks > 0
-                    || TimeUtils.elapsed(user.getMovementData().getLastTeleportInBlock()) < 2000L
-                    || TimeUtils.elapsed(user.getMovementData().getLastExplode()) < 1000L) {
+                       return;
+                }
 
-                return;
-            }
+                double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
 
-            double deltaY = user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY();
+                //0.800000011920929D 0.02D
+                double multiply = 0.9800000190734863D;
 
-            double prediction = (lastDeltaY - 0.08D) * 0.9800000190734863D;
+                double prediction = (lastDeltaY - 0.08D) * multiply;
 
-            if (user.getBlockData().doorTicks > 0) {
-                prediction += 1;
-            }
+                if (user.getBlockData().halfBlockTicks > 0
+                        || user.getBlockData().slabTicks > 0
+                        || user.getBlockData().stairTicks > 0) {
 
-            if (user.getVelocityData().getVelocityTicks() < 20 || user.getBlockData().redstoneTick > 0 || user.getBlockData().pistionTick > 0) {
-                prediction += 1;
-            }
+                    prediction += 0.3104;
+                }
 
+                if (user.getBlockData().webTicks > 0) {
+                    prediction += 0.42f;
+                }
 
-            if (!user.getMovementData().isClientGround() && !user.getMovementData().isLastClientGround()) {
-                if ((deltaY - prediction) > 0.002 && user.getConnectedTick() > 150) {
-                    if (violation++ > 2) {
-                        alert(user, false, "Prediction -> " + (deltaY - prediction));
+                if (user.getBlockData().liquidTicks > 0) {
+                    prediction += 0.42f;
+                }
+
+                if (user.getBlockData().pistionTick > 0) {
+                    prediction += 1;
+                }
+
+                double max = 1E-12F;
+
+                if (user.getMovementData().getAirTicks() > 7) {
+                    if ((deltaY - prediction) > max && user.getConnectedTick() > 100) {
+                        handleDetection(user, "P -> " + (deltaY - prediction));
                     }
-                } else violation -= Math.min(violation, 0.2);
-            }
+                }
 
-            lastDeltaY = deltaY;
+                lastDeltaY = deltaY;
+            }
         }
     }
 }

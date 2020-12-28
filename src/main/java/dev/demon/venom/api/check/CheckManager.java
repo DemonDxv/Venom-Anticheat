@@ -1,25 +1,6 @@
 package dev.demon.venom.api.check;
 
-import dev.demon.venom.api.user.User;
-import dev.demon.venom.impl.checks.combat.aimassist.*;
-import dev.demon.venom.impl.checks.combat.autoclicker.*;
-import dev.demon.venom.impl.checks.combat.killaura.*;
-import dev.demon.venom.impl.checks.combat.reach.*;
-import dev.demon.venom.impl.checks.combat.velocity.*;
-import dev.demon.venom.impl.checks.movement.fly.*;
-import dev.demon.venom.impl.checks.movement.speed.*;
-import dev.demon.venom.impl.checks.other.badpackets.*;
-import dev.demon.venom.impl.checks.other.timer.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import org.bukkit.Bukkit;
-
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+/*
 public class CheckManager {
 
     public static final Class[] checks = new Class[] {
@@ -54,8 +35,12 @@ public class CheckManager {
             KillauraH.class,
             KillauraI.class,
             KillauraJ.class,
+            KillauraK.class,
+            KillauraL.class,
+            KillauraM.class,
 
             ReachA.class,
+         //   ReachB.class,
 
             VelocityA.class,
           //  VelocityB.class,
@@ -67,8 +52,11 @@ public class CheckManager {
           //  VelocityH.class,
 
             //Movement
-            SpeedA.class,
-            SpeedB.class,
+        //    SpeedA.class,
+          //  SpeedB.class,
+
+            MotionA.class,
+           // MotionB.class,
 
             FlyA.class,
             FlyB.class,
@@ -79,6 +67,9 @@ public class CheckManager {
 
 
             //Other
+
+          //  PhaseA.class,
+
             BadPacketsA.class,
             BadPacketsB.class,
             BadPacketsC.class,
@@ -164,3 +155,4 @@ public class CheckManager {
         private User user;
     }
 }
+*/

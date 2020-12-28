@@ -414,6 +414,7 @@ public class BlockAssesement {
             }
 
             if (block.getType() == Material.STEP || blockData == Step.class || blockData == WoodenStep.class) {
+               //Bukkit.broadcastMessage(""+(bb.getMaximum().getY() - bb.getMinimum().getY()));
                 slab = true;
                 stairSlabs = true;
             }

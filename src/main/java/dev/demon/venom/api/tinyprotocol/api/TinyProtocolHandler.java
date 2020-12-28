@@ -52,9 +52,8 @@ public class TinyProtocolHandler {
 
             if (user != null && (System.currentTimeMillis() - user.getTimestamp()) > 500L) {
                 event = new PacketEvent(sender, packet, packetName, PacketEvent.Direction.SERVER, user);
+                Venom.getInstance().getEventManager().callFag(event, user);
             }
-            Venom.getInstance().getEventManager().callEvent(event);
-
 
             return !event.isCancelled() ? event.getPacket() : null;
         } else return packet;
@@ -81,10 +80,8 @@ public class TinyProtocolHandler {
 
                 if ((System.currentTimeMillis() - user.getTimestamp()) > 20L) {
                     event = new PacketEvent(sender, packet, packetName, PacketEvent.Direction.CLIENT, user);
+                    Venom.getInstance().getEventManager().callFag(event, user);
                 }
-
-                PacketEvent finalEvent = event;
-                user.getExecutorService().execute(() -> Venom.getInstance().getEventManager().callEvent(finalEvent));
 
                 return !event.isCancelled() ? event.getPacket() : null;
             }

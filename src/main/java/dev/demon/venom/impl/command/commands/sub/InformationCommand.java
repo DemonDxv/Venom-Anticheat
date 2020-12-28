@@ -2,7 +2,7 @@ package dev.demon.venom.impl.command.commands.sub;
 
 
 import dev.demon.venom.Venom;
-import dev.demon.venom.api.check.Check;
+import dev.demon.venom.api.checknew.Check;
 import dev.demon.venom.api.user.User;
 
 import org.bukkit.Bukkit;
@@ -43,7 +43,7 @@ public class InformationCommand {
                         total.getAndIncrement();
                     });
 
-                    tmp.forEach((c, v) -> commandSender.sendMessage(ChatColor.GRAY + " - " + ChatColor.WHITE + c.getName() + "("+c.getType()+")" + ChatColor.RED + " x"+v));
+                    tmp.forEach((c, v) -> commandSender.sendMessage(ChatColor.GRAY + " - " + ChatColor.WHITE + c.checkname + "("+c.checktype+")" + ChatColor.RED + " x"+v));
                 }
             } else commandSender.sendMessage(ChatColor.RED + "Target is not online.");
         } catch (Exception ingored) {

@@ -24,7 +24,6 @@ import org.bukkit.event.player.*;
  */
 public class BukkitListeners implements Listener {
 
-
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         event.getPlayer().setWalkSpeed(0.2f);
@@ -84,6 +83,7 @@ public class BukkitListeners implements Listener {
             if (e.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
                 user.getMovementData().setLastTeleport(System.currentTimeMillis());
                 user.getMovementData().setLastTeleportTick(user.getConnectedTick());
+                user.getMovementData().getLastTeleportTimer().reset();
             }
             user.getMovementData().setLastFullTeleport(System.currentTimeMillis());
         }

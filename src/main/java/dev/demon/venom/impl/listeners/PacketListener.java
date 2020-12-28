@@ -6,6 +6,7 @@ import dev.demon.venom.Venom;
 import dev.demon.venom.api.event.AnticheatEvent;
 import dev.demon.venom.api.event.AnticheatListener;
 import dev.demon.venom.api.event.Listen;
+import dev.demon.venom.api.event.Listener;
 import dev.demon.venom.api.tinyprotocol.api.NMSObject;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.packet.in.*;
@@ -16,7 +17,7 @@ import dev.demon.venom.impl.events.inevents.*;
 import dev.demon.venom.impl.events.outevents.*;
 import org.bukkit.Bukkit;
 
-public class PacketListener implements AnticheatListener {
+public class PacketListener extends Listener {
 
     @Listen
     public void onPacket(PacketEvent e) {
@@ -108,8 +109,7 @@ public class PacketListener implements AnticheatListener {
 
 
             AnticheatEvent finalEvent = event;
-            user.checks.stream().filter(check -> check.enabled
-                    && !check.freeze).forEach(check -> check.onHandle(user, finalEvent));
+            user.checks.stream().filter(check -> check.enabled).forEach(check -> check.onHandle(user, finalEvent));
         }
     }
 }

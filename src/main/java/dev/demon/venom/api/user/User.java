@@ -2,12 +2,12 @@ package dev.demon.venom.api.user;
 
 import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
-import dev.demon.venom.api.check.Check;
+import dev.demon.venom.api.checknew.Check;
+import dev.demon.venom.api.checknew.CheckManager;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.math.MCSmoothing;
 import dev.demon.venom.utils.math.MathUtil;
 
-import dev.demon.venom.api.check.CheckManager;
 import dev.demon.venom.api.tinyprotocol.api.ProtocolVersion;
 import dev.demon.venom.api.user.sub.*;
 import dev.demon.venom.utils.block.BlockAssesement;
@@ -16,6 +16,7 @@ import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
 import dev.demon.venom.utils.math.evicting.EvictingList;
 import dev.demon.venom.utils.processor.*;
+import dev.demon.venom.utils.time.RunUtils;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 
 import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -54,6 +56,8 @@ public class User {
     private OldProcessors oldProcessors;
     private EntityActionProcessor entityActionProcessor;
 
+    private CheckManager checkManager;
+
     private long joinPing, verifyTime, verifyID = MathUtil.getRandomInteger(-1000, -5000);
 
 
@@ -62,7 +66,8 @@ public class User {
 
     private Deque<PlayerLocation> previousLocations2 = new LinkedList<>();
 
-    public EvictingList<PlayerLocation> previousLocations = new EvictingList(10);
+    public final Queue<PlayerLocation> previousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8), previousPreviousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8);
+
 
 
     private ProtocolVersion protocolVersion;
@@ -77,7 +82,7 @@ public class User {
     public WeakHashMap<Short, Long> transactionMap = new WeakHashMap<>();
     private WeakHashMap<Check, Integer> flaggedChecks = new WeakHashMap<>();
 
-    public final List<Check> checks;
+    public Queue<Check> checks;
 
     public boolean inBlock;
 
@@ -117,11 +122,14 @@ public class User {
         this.player = player;
         this.uuid = player.getUniqueId();
 
-        this.checks = CheckManager.loadChecks();
-
         executorService = Executors.newSingleThreadScheduledExecutor();
 
         timestamp = System.currentTimeMillis();
+
+        checkManager = new CheckManager();
+
+        checks = checkManager.getChecks();
+
 
         movementData = new MoveData(this);
         combatData = new CombatData(this);
@@ -137,7 +145,17 @@ public class User {
         movementData.setFromFrom(movementData.getFromFrom());
 
         movementData.location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), System.currentTimeMillis());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                    previousLocations.add(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(), getMovementData().getTo().getZ(), getMovementData().getTo().getYaw(), getMovementData().getTo().getPitch()));
+                    getMovementData().setLocation(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(), getMovementData().getTo().getZ(), System.currentTimeMillis()));
 
+                    if (getMovementData().getLocation() != null) {
+                        getMovementData().setPreviousLocation(getMovementData().getLocation());
+                    }
+                }
+        }.runTaskTimerAsynchronously(Venom.getInstance(), 0L, 0L);
 
 
         setupProcessors();
@@ -154,6 +172,7 @@ public class User {
 
         lagProcessor = new LagProcessor();
         lagProcessor.setUser(this);
+        lagProcessor.setupTimers();
 
         velocityProcessor = new VelocityProcessor();
         velocityProcessor.setUser(this);
@@ -235,7 +254,12 @@ public class User {
             Block block = BlockUtil.getBlock(getMovementData().getBukkitTo().clone().add(0, -1, 0));
             if (block != null) {
 
+                if (getBlockData().lastInsideBlockTimer.passed(50)) {
+                    getMovementData().setInBlockTeleporting(false);
+                }
+
                 this.inBlock = blockAssesement.isInBlock();
+
 
                 if (blockAssesement.isPistion()) {
                     if (blockData.pistionTick < 20) blockData.pistionTick++;
@@ -433,9 +457,10 @@ public class User {
         getBlockData().climable = blockAssesement.isClimbale();
 
         if (blockAssesement.isClimbale()) {
-            if (blockData.climbableTicks < 20) blockData.climbableTicks++;
+            blockData.lastClimbableTimer.reset();
+            if (blockData.climbableTicks < 20) blockData.climbableTicks+=2;
         } else {
-            if (blockData.climbableTicks > 0) blockData.climbableTicks--;
+            if (blockData.climbableTicks > 0)  blockData.climbableTicks--;
         }
 
         if (blockAssesement.isWeb()) {

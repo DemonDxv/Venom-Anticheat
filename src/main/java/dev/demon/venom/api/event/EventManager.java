@@ -2,13 +2,14 @@ package dev.demon.venom.api.event;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.event.exceptions.ListenParamaterException;
+import dev.demon.venom.api.user.User;
+import dev.demon.venom.impl.events.PacketEvent;
+import dev.demon.venom.impl.listeners.PacketListener;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,21 @@ import java.util.stream.Collectors;
 public class EventManager {
     private final List<ListenerMethod> listenerMethods = new CopyOnWriteArrayList<>();
     public boolean paused = false;
+    private List<Listener> listenersList = Collections.synchronizedList(new ArrayList<>());
+
+    public void setup() {
+        this.listenersList.add(new PacketListener());
+    }
+
+    public void callFag(PacketEvent packetEvent, User user) {
+        user.getExecutorService().execute(() ->
+                this.listenersList.forEach(listener ->
+                        listener.onPacket(packetEvent)));
+    }
+
+    public void registerFag(Listener... listener) {
+        this.listenersList.addAll(Arrays.asList(listener));
+    }
 
     public void registerListener(Method method, AnticheatListener listener, Plugin plugin) throws ListenParamaterException {
         if(method.getParameterTypes().length == 1) {
