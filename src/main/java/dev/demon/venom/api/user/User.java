@@ -29,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -60,15 +61,11 @@ public class User {
 
     private long joinPing, verifyTime, verifyID = MathUtil.getRandomInteger(-1000, -5000);
 
-
-
-    private ScheduledExecutorService executorService;
+    private ExecutorService executorService;
 
     private Deque<PlayerLocation> previousLocations2 = new LinkedList<>();
 
     public final Queue<PlayerLocation> previousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8), previousPreviousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8);
-
-
 
     private ProtocolVersion protocolVersion;
 
@@ -98,11 +95,7 @@ public class User {
     public HashMap<Check, Integer> vl = new HashMap<>();
 
     public void addVL(Check check) {
-        if (vl.containsKey(check)) {
-            vl.put(check, vl.get(check) + 1);
-        } else {
-            vl.put(check, 1);
-        }
+        vl.put(check, vl.getOrDefault(check, 0) + 1);
     }
     public void resetVL(Check check) {
         if (vl.containsKey(check)) {
@@ -122,7 +115,7 @@ public class User {
         this.player = player;
         this.uuid = player.getUniqueId();
 
-        executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService = Executors.newSingleThreadExecutor();
 
         timestamp = System.currentTimeMillis();
 
@@ -148,8 +141,11 @@ public class User {
         new BukkitRunnable() {
             @Override
             public void run() {
-                    previousLocations.add(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(), getMovementData().getTo().getZ(), getMovementData().getTo().getYaw(), getMovementData().getTo().getPitch()));
-                    getMovementData().setLocation(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(), getMovementData().getTo().getZ(), System.currentTimeMillis()));
+                    previousLocations.add(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(),
+                            getMovementData().getTo().getZ(), getMovementData().getTo().getYaw(), getMovementData().getTo().getPitch()));
+
+                    getMovementData().setLocation(new PlayerLocation(getMovementData().getTo().getX(),
+                            getMovementData().getTo().getY(), getMovementData().getTo().getZ(), System.currentTimeMillis()));
 
                     if (getMovementData().getLocation() != null) {
                         getMovementData().setPreviousLocation(getMovementData().getLocation());

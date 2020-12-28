@@ -64,9 +64,8 @@ public class BlockBox1_8_R3 implements BlockBox {
                         Block nmsBlock = nmsiBlockData.getBlock();
                         List<AxisAlignedBB> preBoxes = new ArrayList<>();
 
-                        nmsBlock.updateShape(nmsWorld, pos);
+                    //    nmsBlock.updateShape(nmsWorld, pos);
                         nmsBlock.a(nmsWorld, pos, nmsiBlockData, (AxisAlignedBB) box.toAxisAlignedBB(), preBoxes, null);
-
 
                         if (preBoxes.size() > 0) {
                             for (AxisAlignedBB aabb : preBoxes) {

@@ -156,11 +156,7 @@ public class MovementProcessor {
                             }
 
                             user.getMiscData().setLastBlockPlaced(block);
-                        } else {
-                            valid = false;
                         }
-                    } else {
-                        valid = false;
                     }
 
                     user.getMiscData().setBlockPlaceValidScaffold(valid);
@@ -408,7 +404,7 @@ public class MovementProcessor {
 
 
                     PlayerLocation lastLocation = user.getMovementData().getLocation();
-                    PlayerLocation lastLocation2 = user.getMovementData().getPreviousLocation();
+                   // PlayerLocation lastLocation2 = user.getMovementData().getPreviousLocation();
 
 
                     if (user.isSafe() && user.getBoundingBox() != null) {
@@ -545,53 +541,48 @@ public class MovementProcessor {
 
     private void updateBlockCheck() {
 
-        boolean work = true;
+        //user.debug(""+user.getPlayer().getMaximumNoDamageTicks());
 
-        if (work) {
+        BlockAssesement blockAssesement = new BlockAssesement(user.getBoundingBox(), user);
 
-            //user.debug(""+user.getPlayer().getMaximumNoDamageTicks());
+        user.getMovementData().setChunkLoaded(BlockUtil.isChunkLoaded(user.getMovementData().getTo().toLocation(user.getPlayer().getWorld())));
 
-            BlockAssesement blockAssesement = new BlockAssesement(user.getBoundingBox(), user);
+        boolean inCombat = user.getCombatData().wasAttacked(100);
 
-            user.getMovementData().setChunkLoaded(BlockUtil.isChunkLoaded(user.getMovementData().getTo().toLocation(user.getPlayer().getWorld())));
+        Material bukkitBlock = Objects.requireNonNull(BlockUtil.getBlock(user.getPlayer().getLocation())).getType();
 
-            boolean inCombat = user.getCombatData().wasAttacked(100);
+        boolean climbable = (bukkitBlock == Material.LADDER || bukkitBlock == Material.VINE);
 
-            Material bukkitBlock = Objects.requireNonNull(BlockUtil.getBlock(user.getPlayer().getLocation())).getType();
+        float offset = (inCombat ? 0.9f
+                : (climbable || user.getBlockData().iceTicks > 0
+                || (user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY()) < -1.00f ? 0.8f : 0.3f));
 
-            boolean climable = (bukkitBlock == Material.LADDER || bukkitBlock == Material.VINE);
+        if (user.getMovementData().isChunkLoaded()) {
 
-            float offset = (inCombat ? 0.9f
-                    : (climable || user.getBlockData().iceTicks > 0
-                    || (user.getMovementData().getTo().getY() - user.getMovementData().getFrom().getY()) < -1.00f ? 0.8f : 0.3f));
+            Venom.getInstance().getBlockBoxManager()
+                    .getBlockBox().getCollidingBoxes(user.getPlayer().getWorld(), user.getBoundingBox().grow(offset, 0.35f, offset), user)
+                    .parallelStream().forEach(boundingBox -> {
 
-            if (user.getMovementData().isChunkLoaded()) {
+                Block block = BlockUtil.getBlock(boundingBox.getMinimum().toLocation(user.getPlayer().getWorld()));
 
-                Venom.getInstance().getBlockBoxManager()
-                        .getBlockBox().getCollidingBoxes(user.getPlayer().getWorld(), user.getBoundingBox().grow(offset, 0.35f, offset), user)
-                        .parallelStream().forEach(boundingBox -> {
+                if (block != null) {
+                    blockAssesement.updateBlocks(new BlockEntry(block, boundingBox, inCombat), climbable);
+                }
+            });
+        }
 
-                    Block block = BlockUtil.getBlock(boundingBox.getMinimum().toLocation(user.getPlayer().getWorld()));
-
-                    if (block != null) {
-                        blockAssesement.updateBlocks(new BlockEntry(block, boundingBox, inCombat), climable);
-                    }
-                });
-            }
-
-            user.getMovementData().setOnGround(blockAssesement.isOnGround());
+        user.getMovementData().setOnGround(blockAssesement.isOnGround());
 
         //    user.getMovementData().setTestGround(blockAssesement.isTestGround());
 
-            user.getMovementData().setCollidedGround(blockAssesement.isCollidedGround());
+        user.getMovementData().setCollidedGround(blockAssesement.isCollidedGround());
 
-            if (blockAssesement.isCollidedGround()) {
-                user.getMovementData().setLastCollidedGround(System.currentTimeMillis());
-            }
-
-            user.getBlockData().isGroundWater = blockAssesement.isLiquidGround();
-            user.update(blockAssesement);
+        if (blockAssesement.isCollidedGround()) {
+            user.getMovementData().setLastCollidedGround(System.currentTimeMillis());
         }
+
+        user.getBlockData().isGroundWater = blockAssesement.isLiquidGround();
+        user.update(blockAssesement);
     }
 
 

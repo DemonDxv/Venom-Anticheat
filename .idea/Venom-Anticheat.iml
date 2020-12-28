@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="minecraft" name="Minecraft">
+      <configuration>
+        <autoDetectTypes>
+          <platformType>SPIGOT</platformType>
+        </autoDetectTypes>
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -12,6 +21,14 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="mongo-java-driver-3.9.1" level="project" />
     <orderEntry type="library" name="spigot-1.8-R0.1-SNAPSHOT-latest" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.8.8:1.8.8" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.8.3:1.8.3" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.7.10:1.7.10" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.8:1.8" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.11.2:1.11.2" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.14.3:1.14.3" level="project" />
+    <orderEntry type="library" name="Maven: org.github.spigot:1.12.2:1.12.2" level="project" />
+    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.12" level="project" />
     <orderEntry type="library" name="Maven: org.github.spigot:1.8.8:1.8.8" level="project" />
     <orderEntry type="library" name="Maven: org.github.spigot:1.8.3:1.8.3" level="project" />
     <orderEntry type="library" name="Maven: org.github.spigot:1.7.10:1.7.10" level="project" />

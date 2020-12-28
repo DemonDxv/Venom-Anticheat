@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
 public class UserManager {
-    private Map<UUID, User> users = Collections.synchronizedMap(new ConcurrentHashMap<>());
+    private final Map<UUID, User> users = Collections.synchronizedMap(new ConcurrentHashMap<>());
 
     public User getUser(UUID uuid) {
         return users.getOrDefault(uuid, null);

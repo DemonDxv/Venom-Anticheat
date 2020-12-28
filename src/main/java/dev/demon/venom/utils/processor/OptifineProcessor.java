@@ -50,9 +50,6 @@ public class OptifineProcessor {
     private int test;
 
     public OptifineProcessor(User user) {
-        user.getExecutorService().scheduleAtFixedRate(() -> {
-
-        }, 50, 50L, TimeUnit.MILLISECONDS);
     }
 
 

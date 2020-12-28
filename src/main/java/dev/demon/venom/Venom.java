@@ -105,7 +105,7 @@ public class Venom extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().addChannel(player));
 
 
-        RunUtils.taskTimerAsync(() -> {
+        RunUtils.taskTimer(() -> {
             for (World world : Bukkit.getWorlds()) {
                 Object vWorld = CraftReflection.getVanillaWorld(world);
 
