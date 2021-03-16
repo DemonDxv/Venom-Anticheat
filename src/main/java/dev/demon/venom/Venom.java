@@ -1,12 +1,9 @@
 package dev.demon.venom;
 
-import dev.demon.venom.api.checknew.CheckManager;
 import dev.demon.venom.api.event.EventManager;
-import dev.demon.venom.api.mongo.MongoManager;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.Reflections;
 import dev.demon.venom.api.tinyprotocol.api.packets.reflections.types.WrappedField;
-import dev.demon.venom.api.user.User;
 import dev.demon.venom.api.user.UserManager;
 import dev.demon.venom.impl.command.CommandManager;
 import dev.demon.venom.impl.events.ServerShutdownEvent;
@@ -16,12 +13,10 @@ import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.box.BlockBoxManager;
 import dev.demon.venom.utils.box.impl.BoundingBoxes;
 import dev.demon.venom.utils.command.CommandUtils;
-import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.processor.EntityProcessor;
 import dev.demon.venom.utils.processor.LagProcessor;
-import dev.demon.venom.utils.reflection.CraftReflection;
-import dev.demon.venom.utils.time.RunUtils;
+import dev.demon.venom.utils.runnables.TransactionRunnable;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,14 +27,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
@@ -88,11 +80,25 @@ public class Venom extends JavaPlugin {
 
         bukkitVersion = Bukkit.getServer().getClass().getPackage().getName().substring(23);
 
+        for (World world : Bukkit.getWorlds()) {
+            getEntities().put(world.getUID(), new ArrayList<>());
+        }
+
+        new TransactionRunnable();
+
         Venom.getInstance().getEntityProcessor().start();
 
         tinyProtocolHandler = new TinyProtocolHandler();
 
         executorService = Executors.newSingleThreadScheduledExecutor();
+
+        executorService.scheduleAtFixedRate(() ->
+                Bukkit.getWorlds().parallelStream().forEach(world -> {
+                    getEntities().remove(world.getUID());
+                    getEntities()
+                            .put(world.getUID(),
+                                    Collections.synchronizedList(new ArrayList<>(world.getEntities())));
+                }), 30L, 60L, TimeUnit.MILLISECONDS);
 
         userManager = new UserManager();
 
@@ -105,7 +111,7 @@ public class Venom extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(player -> TinyProtocolHandler.getInstance().addChannel(player));
 
 
-        RunUtils.taskTimer(() -> {
+       /* RunUtils.taskTimerAsync(() -> {
             for (World world : Bukkit.getWorlds()) {
                 Object vWorld = CraftReflection.getVanillaWorld(world);
 
@@ -115,7 +121,7 @@ public class Venom extends JavaPlugin {
 
                 Venom.getInstance().getEntities().put(world.getUID(), bukkitEntities);
             }
-        }, 2L, 2L);
+        }, 2L, 2L);*/
 
 
         new BlockUtil();

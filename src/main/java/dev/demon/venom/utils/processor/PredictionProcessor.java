@@ -11,6 +11,7 @@ import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.math.MathUtil;
 import dev.demon.venom.utils.time.TimeUtils;
 import dev.demon.venom.utils.version.VersionUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -445,11 +446,9 @@ public class PredictionProcessor {
                 diff = MathUtil.hypot(diffX, diffZ);
 
                 diff = roundToDouble(diff, precision + 2);
-                //  diffString = roundToString(diff, precision + 2);
+               //   diffString = roundToString(diff, precision + 2);
 
-               // double parse = Double.parseDouble(roundToString(closestdiff, precision + 2));
-
-
+             //   double parse = Double.parseDouble(roundToString(closestdiff, precision + 2));
 
 
                 boolean bad = user.getBlockData().soulSandTicks > 0
@@ -491,6 +490,8 @@ public class PredictionProcessor {
                 if (diff < closestdiff) {
                     closestdiff = diff;
                 }
+
+                user.getMovementData().setInvalidMovement((diff > preD));
             }
         }
     }

@@ -2,6 +2,7 @@ package dev.demon.venom.impl.listeners;
 
 import dev.demon.venom.Venom;
 import dev.demon.venom.api.user.User;
+import dev.demon.venom.utils.processor.EntityActionProcessor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -59,6 +60,7 @@ public class BukkitListeners implements Listener {
         if (user != null) {
             user.getCombatData().setRespawn(true);
             user.getCombatData().setLastRespawn(System.currentTimeMillis());
+
         }
     }
 
@@ -151,6 +153,8 @@ public class BukkitListeners implements Listener {
 
                     case FALL:
                         user.getMovementData().setLastFallDamage(System.currentTimeMillis());
+
+                        user.getEntityActionProcessor().addAction(EntityActionProcessor.ActionType.FALL_DAMAGE);
                         break;
 
                     case FIRE:
@@ -159,6 +163,7 @@ public class BukkitListeners implements Listener {
                         break;
 
                     case PROJECTILE:
+                        user.getEntityActionProcessor().addAction(EntityActionProcessor.ActionType.BOW);
                         user.getCombatData().setLastBowDamage(System.currentTimeMillis());
                         user.getCombatData().setLastBowDamageTick(user.getConnectedTick());
                         break;

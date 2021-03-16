@@ -7,7 +7,11 @@ import lombok.Getter;
 public class WrappedOutEntityDestroy extends NMSObject {
     private static final String packet = Server.ENTITY_DESTROY;
 
+    protected int[] ids;
+
     public WrappedOutEntityDestroy(int[] ids) {
+        this.ids = ids;
+
         setPacket(packet, ids);
     }
 

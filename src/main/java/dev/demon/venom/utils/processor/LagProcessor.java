@@ -274,13 +274,10 @@ public class LagProcessor {
 
             int maxPing = 750;
 
-            if ((this.transactionPing > maxPing || this.keepAlivePing > maxPing)) {
-                if (kickBullshit++ > 5) {
-                    RunUtils.task(() -> user.getPlayer().kickPlayer("Timed out."));
-                }
-            } else {
-                kickBullshit = 0;
+            if (user.getVelocityData().getVelocityTicks() < 20) {
+                kickBullshit = Math.min(kickBullshit, 1);
             }
+
 
         }
     }

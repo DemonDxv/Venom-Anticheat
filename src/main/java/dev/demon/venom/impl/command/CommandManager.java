@@ -18,7 +18,7 @@ public class CommandManager {
         addCommand(new Command(new MainCommand("venom"), "venom info", "/Venom info <player>", "Shows information about a player.", true));
         addCommand(new Command(new MainCommand("venom"), "venom alerts", "/Venom alerts", "Toggle on, and off alerts.", true));
         addCommand(new Command(new MainCommand("venom"), "venom check", "/Venom check <player>", "Shows development info about selected player.", true));
-        addCommand(new Command(new MainCommand("venom"), "venom checks", "/Venom checks <check> <type>", "Toggle on, and off checks.", true));
+        addCommand(new Command(new MainCommand("venom"), "venom impl", "/Venom impl <check> <type>", "Toggle on, and off impl.", true));
         addCommand(new Command(new MainCommand("venom"), "venom bans", "/Venom bans", "Toggle on, and off bans.", true));
     }
 

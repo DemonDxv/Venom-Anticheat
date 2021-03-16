@@ -3,6 +3,7 @@ package dev.demon.venom.utils.location;
 import dev.demon.venom.api.user.User;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 
@@ -25,14 +26,14 @@ public class PlayerLocation {
 
     public PlayerLocation(double x, double y, double z, float yaw, float pitch) {
         this.x = x;
-        minX = x - 0.41;
-        maxX = x + 0.41;
+        minX = x - 0.3;
+        maxX = x + 0.3;
 
         this.y = y;
 
         this.z = z;
-        minZ = z - 0.41;
-        maxZ = z + 0.41;
+        minZ = z - 0.3;
+        maxZ = z + 0.3;
 
         this.yaw = yaw;
         this.pitch = pitch;
@@ -41,24 +42,43 @@ public class PlayerLocation {
 
     public PlayerLocation(double x, double y, double z, long timeStamp) {
         this.x = x;
-        minX = x - 0.41;
-        maxX = x + 0.41;
+        minX = x - 0.3;
+        maxX = x + 0.3;
 
         this.y = y;
 
         this.z = z;
-        minZ = z - 0.41;
-        maxZ = z + 0.41;
+        minZ = z - 0.3;
+        maxZ = z + 0.3;
 
         this.timeStamp = timeStamp;
     }
 
-    public Deque<PlayerLocation> getEstimatedLocation(User user, long time, long delta) {
-        Deque<PlayerLocation> locs = new LinkedList<>();
+    public PlayerLocation add(double x, double y, double z) {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+        return this;
+    }
+
+
+
+    public Queue<PlayerLocation> getEstimatedLocation(User user, long time, long delta) {
+        Queue<PlayerLocation> locs = new LinkedList<>();
 
         user.getPreviousLocations().stream()
                 .sorted(Comparator.comparingLong(loc -> Math.abs(loc.getTimeStamp() - (System.currentTimeMillis() - time))))
                 .filter(loc -> Math.abs(loc.getTimeStamp() - (System.currentTimeMillis() - time)) < delta)
+                .forEach(locs::add);
+        return locs;
+    }
+
+    public Queue<PlayerLocation> getEstimatedLocation2(User user, long time, long ping, long delta) {
+        Queue<PlayerLocation> locs = new LinkedList<>();
+
+        user.getPreviousLocations()
+                .stream()
+                .filter(loc -> time - loc.getTimeStamp() > 0 && time - loc.getTimeStamp() < ping + delta)
                 .forEach(locs::add);
         return locs;
     }

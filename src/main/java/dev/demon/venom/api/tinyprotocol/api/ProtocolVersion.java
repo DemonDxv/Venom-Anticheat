@@ -48,6 +48,9 @@ public enum ProtocolVersion {
 
     @Getter
     private static ProtocolVersion gameVersion = fetchGameVersion();
+
+
+
     private int version;
     @Getter
     private static boolean paper;

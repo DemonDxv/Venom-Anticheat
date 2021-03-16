@@ -63,7 +63,7 @@ public class MainCommand extends BukkitCommand {
                     } else if (s.equalsIgnoreCase("bans")) {
                         found = true;
                         bansCommand.execute(args, s, commandSender);
-                    } else if (s.equalsIgnoreCase("checks")) {
+                    } else if (s.equalsIgnoreCase("impl")) {
                         found = true;
                         checksCommand.execute(args, s, commandSender);
                     }

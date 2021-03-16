@@ -34,7 +34,7 @@ public class RayTrace {
         return origin.clone().add(direction.clone().multiply(blocksAway));
     }
 
-    //checks if a position is on contained within the position
+    //impl if a position is on contained within the position
     public boolean isOnLine(Vector position) {
         double t = (position.getX() - origin.getX()) / direction.getX();
         ;

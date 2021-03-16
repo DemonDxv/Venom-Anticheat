@@ -21,7 +21,7 @@ public class MiscData {
     private float speedPotionEffectLevel, jumpPotionMultiplyer;
     private long lastRespawnTicksSet, scaffoldProcessorIgnoreTicks, lastEjectVechielEject, lastBlockBreakCancel, lastBlockCancel, lastNearBoat, lastMount, lastGamemodeSwitch, lastMoutUpdate, lastBlockPlace;
     private double clientSensitivity, clientSensitivity2;
-    private short transactionID2 = randomTransactionID(), transactionID = randomTransactionID(), transactionIDVelocity = randomTransactionIDVelocity(), transactionFastID = randomTransactionID();
+    private short transactionID3 = randomTransactionID3(), transactionID2 = randomTransactionID(), transactionID = randomTransactionID(), transactionIDMovement = randomTransactionID2(), transactionIDVelocity = randomTransactionIDVelocity(), transactionFastID = randomTransactionID();
     private Block lastBlockPlaced;
     private EventTimer pluginTeleportTimer, blockPlacePacketTimer, lastVoidDamage, teleportLagBullshit, packetRespawnTimer, blockBreakTimer, lastWorldSwitchTimer, teleportCommandDetectionTimer, commandTPTimer, blockPlaceTimer, dismountTimer, tpSignTimer, mountTimer, blockPlaceCancelTimer, blockBreakCancelTimer;
 
@@ -32,6 +32,12 @@ public class MiscData {
     }
 
     public short randomTransactionID() {
+        return (short) ThreadLocalRandom.current().nextInt(999999999);
+    }
+    public short randomTransactionID2() {
+        return (short) ThreadLocalRandom.current().nextInt(999999998);
+    }
+    public short randomTransactionID3() {
         return (short) ThreadLocalRandom.current().nextInt(999999999);
     }
     public short randomTransactionIDVelocity() {

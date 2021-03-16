@@ -66,6 +66,117 @@ public class ReflectionsUtil {
         return count;
     }
 
+    public static dev.demon.venom.utils.box.simple.BoundingBox getBlockBoundingBox2(Block block) {
+        try {
+            if (!isBukkitVerison("1_7")) {
+                Object bPos = blockPosition.getConstructor(int.class, int.class, int.class).newInstance(block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ());
+                Object world = getWorldHandle(block.getWorld());
+                Object data = getMethodValue(getMethod(world.getClass(), "getType", blockPosition), world, bPos);
+                Object blockNMS = getMethodValue(getMethod(getNMSClass("IBlockData"), "getBlock"), data);
+
+                if (ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_13)) {
+                    if (!isNewVersion()) {
+
+                        if (getMethodValueNoST(getMethodNoST(blockNMS.getClass(), "a", World, blockPosition, iBlockData), blockNMS, world, bPos, data) != null
+                                && !BlockUtil.isSlab(block)) {
+                            dev.demon.venom.utils.box.simple.BoundingBox box =
+                                    toBoundingBox2(getMethodValue(getMethod(blockNMS.getClass(), "a", World, blockPosition, iBlockData), blockNMS, world, bPos, data));
+
+                            if (ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_13)) {
+                                if (block.getType().toString().contains("STEP") && !block.getType().toString().contains("WOOD")) {
+                                    Step slab = (Step) block.getType().getNewData(block.getData());
+
+                                    box.minY = block.getY();
+                                    box.maxY = block.getY();
+                                    if (slab.isInverted()) {
+                                        box = box.add(0, 0.5f, 0, 0, 1f, 0);
+                                    } else {
+                                        box = box.add(0, 0f, 0, 0, 0.5f, 0);
+                                    }
+                                } else if (block.getType().toString().contains("STEP")) {
+                                    WoodenStep slab = (WoodenStep) block.getType().getNewData(block.getData());
+
+                                    box.minY = block.getY();
+                                    box.maxY = block.getY();
+                                    if (slab.isInverted()) {
+                                        box = box.add(0, 0.5f, 0, 0, 1f, 0);
+                                    } else {
+                                        box = box.add(0, 0f, 0, 0, 0.5f, 0);
+                                    }
+                                }
+                            }
+                            return box;
+                        } else if (getMethodValueNoST(getMethodNoST(vanillaBlock, "a", World, blockPosition, iBlockData), blockNMS, world, bPos, data) != null) {
+                            dev.demon.venom.utils.box.simple.BoundingBox box = toBoundingBox2(getMethodValue(getMethod(vanillaBlock, "a", World, blockPosition, iBlockData), blockNMS, world, bPos, data));
+
+                            if (ProtocolVersion.getGameVersion().isBelow(ProtocolVersion.V1_13)) {
+                                if (block.getType().toString().contains("STEP") && !block.getType().toString().contains("WOOD")) {
+                                    Step slab = (Step) block.getType().getNewData(block.getData());
+
+                                    box.minY = block.getY();
+                                    box.maxY = block.getY();
+                                    if (slab.isInverted()) {
+                                        box = box.add(0, 0.5f, 0, 0, 1f, 0);
+                                    } else {
+                                        box = box.add(0, 0f, 0, 0, 0.5f, 0);
+                                    }
+                                } else if (block.getType().toString().contains("STEP")) {
+                                    WoodenStep slab = (WoodenStep) block.getType().getNewData(block.getData());
+
+                                    box.minY = block.getY();
+                                    box.maxY = block.getY();
+                                    if (slab.isInverted()) {
+                                        box = box.add(0, 0.5f, 0, 0, 1f, 0);
+                                    } else {
+                                        box = box.add(0, 0f, 0, 0, 0.5f, 0);
+                                    }
+                                }
+                            }
+                            return box;
+                        } else {
+                            return new dev.demon.venom.utils.box.simple.BoundingBox(block.getX(), block.getY(), block.getZ(), block.getX(), block.getY(), block.getZ());
+                        }
+                    } else {
+                        if (getMethodValueNoST(getMethodNoST(blockNMS.getClass(), "a", iBlockData, getNMSClass("IBlockAccess"), blockPosition), blockNMS, data, world, bPos) != null) {
+                            return toBoundingBox2(getMethodValue(getMethod(blockNMS.getClass(), "a", iBlockData, getNMSClass("IBlockAccess"), blockPosition), blockNMS, data, world, bPos)).add(block.getX(), block.getY(), block.getZ(), block.getX(), block.getY(), block.getZ());
+                        } else if (getMethodValueNoST(getMethodNoST(vanillaBlock, "a", iBlockData, getNMSClass("IBlockAccess"), blockPosition), blockNMS, data, world, bPos) != null) {
+                            return toBoundingBox2(getMethodValue(getMethod(vanillaBlock, "a", iBlockData, getNMSClass("IBlockAccess"), blockPosition), blockNMS, data, world, bPos)).add(block.getX(), block.getY(), block.getZ(), block.getX(), block.getY(), block.getZ());
+                        } else {
+                            return new dev.demon.venom.utils.box.simple.BoundingBox(block.getX(), block.getY(), block.getZ(), block.getX(), block.getY(), block.getZ());
+                        }
+                    }
+                } else {
+                    Object voxelShape = getMethodValue(getMethod(vanillaBlock, "a", iBlockData, getNMSClass("IBlockAccess"), blockPosition), blockNMS, data, world, bPos);
+                    Object axisAlignedBB = getMethodValue(getMethod(getNMSClass("VoxelShape"), "a"), voxelShape);
+
+
+                    return toBoundingBox2(axisAlignedBB);
+
+                }
+            } else {
+                Object blockNMS = getVanillaBlock(block);
+                Object world = getWorldHandle(block.getWorld());
+                if (getMethodValueNoST(getMethodNoST(vanillaBlock, "a", getNMSClass("World"), int.class, int.class, int.class), blockNMS, world, block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ()) != null) {
+                    return toBoundingBox2(getMethodValue(getMethod(vanillaBlock, "a", getNMSClass("World"), int.class, int.class, int.class), blockNMS, world, block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ()));
+                } else {
+                    //Bukkit.broadcastMessage(block.getType().name());
+                    return new dev.demon.venom.utils.box.simple.BoundingBox(block.getX(), block.getY(), block.getZ(), block.getX(), block.getY(), block.getZ());
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().log(Level.SEVERE, "Error occured with block: " + block.getType().toString());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static dev.demon.venom.utils.box.simple.BoundingBox toBoundingBox2(Object aaBB) {
+        Vector min = getBoxMin(aaBB);
+        Vector max = getBoxMax(aaBB);
+
+        return new dev.demon.venom.utils.box.simple.BoundingBox((float) min.getX(), (float) min.getY(), (float) min.getZ(), (float) max.getX(), (float) max.getY(), (float) max.getZ());
+    }
+
     public static Object modifyBoundingBox(Object box, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         double newminX = (double) getFieldValue(getFieldByName(box.getClass(), "a"), box) - minX;
         double newminY = (double) getFieldValue(getFieldByName(box.getClass(), "b"), box) - minY;

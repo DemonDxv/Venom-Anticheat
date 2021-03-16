@@ -2,8 +2,8 @@ package dev.demon.venom.api.user;
 
 import com.google.common.collect.EvictingQueue;
 import dev.demon.venom.Venom;
-import dev.demon.venom.api.checknew.Check;
-import dev.demon.venom.api.checknew.CheckManager;
+import dev.demon.venom.impl.check.Check;
+import dev.demon.venom.impl.check.CheckManager;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.math.MCSmoothing;
 import dev.demon.venom.utils.math.MathUtil;
@@ -14,9 +14,7 @@ import dev.demon.venom.utils.block.BlockAssesement;
 import dev.demon.venom.utils.block.BlockUtil;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.location.PlayerLocation;
-import dev.demon.venom.utils.math.evicting.EvictingList;
 import dev.demon.venom.utils.processor.*;
-import dev.demon.venom.utils.time.RunUtils;
 import dev.demon.venom.utils.version.VersionUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,14 +22,11 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Getter
 @Setter
@@ -59,13 +54,13 @@ public class User {
 
     private CheckManager checkManager;
 
-    private long joinPing, verifyTime, verifyID = MathUtil.getRandomInteger(-1000, -5000);
+    private long lastBanned = 0L, joinPing, verifyTime, verifyID = MathUtil.getRandomInteger(-1000, -5000);
 
     private ExecutorService executorService;
 
     private Deque<PlayerLocation> previousLocations2 = new LinkedList<>();
 
-    public final Queue<PlayerLocation> previousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8), previousPreviousLocations = net.minecraft.util.com.google.common.collect.EvictingQueue.create(8);
+    public final Queue<PlayerLocation> previousLocations = EvictingQueue.create(8);
 
     private ProtocolVersion protocolVersion;
 
@@ -132,27 +127,21 @@ public class User {
         connectionData = new ConnectionData(this);
 
         boundingBox = new BoundingBox(0f, 0f, 0f, 0f, 0f, 0f);
+        getMovementData().location =
+                new PlayerLocation(getMovementData().getTo().getX(),
+                        getMovementData().getTo().getY(),
+                        getMovementData().getTo().getZ(),
+                        System.currentTimeMillis());
 
         movementData.setTo(new CustomLocation(0.0, 0.0, 0.0));
         movementData.setFrom(movementData.getFrom());
         movementData.setFromFrom(movementData.getFromFrom());
 
-        movementData.location = new PlayerLocation(movementData.getTo().getX(), movementData.getTo().getY(), movementData.getTo().getZ(), System.currentTimeMillis());
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                    previousLocations.add(new PlayerLocation(getMovementData().getTo().getX(), getMovementData().getTo().getY(),
-                            getMovementData().getTo().getZ(), getMovementData().getTo().getYaw(), getMovementData().getTo().getPitch()));
+        movementProcessor.getTrackedPositions().add(movementData.getTo());
 
-                    getMovementData().setLocation(new PlayerLocation(getMovementData().getTo().getX(),
-                            getMovementData().getTo().getY(), getMovementData().getTo().getZ(), System.currentTimeMillis()));
-
-                    if (getMovementData().getLocation() != null) {
-                        getMovementData().setPreviousLocation(getMovementData().getLocation());
-                    }
-                }
-        }.runTaskTimerAsynchronously(Venom.getInstance(), 0L, 0L);
-
+        if (movementProcessor.getTrackedPositions().size() >= 8) {
+            movementProcessor.getTrackedPositions().removeFirst();
+        }
 
         setupProcessors();
 

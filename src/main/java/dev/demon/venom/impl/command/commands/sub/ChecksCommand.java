@@ -1,8 +1,8 @@
 package dev.demon.venom.impl.command.commands.sub;
 
 import dev.demon.venom.Venom;
-import dev.demon.venom.api.checknew.CheckManager;
-import dev.demon.venom.api.checknew.Check;
+import dev.demon.venom.impl.check.CheckManager;
+import dev.demon.venom.impl.check.Check;
 import dev.demon.venom.api.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

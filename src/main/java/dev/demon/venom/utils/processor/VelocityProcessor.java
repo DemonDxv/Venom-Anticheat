@@ -2,6 +2,7 @@ package dev.demon.venom.utils.processor;
 
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
+import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInFlyingPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInTransactionPacket;
 import dev.demon.venom.api.tinyprotocol.packet.in.WrappedInUseEntityPacket;
 import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 @Getter
@@ -33,6 +35,8 @@ public class VelocityProcessor {
 
                 if (wrappedOutVelocityPacket.getId() == user.getPlayer().getEntityId()) {
 
+                    user.getEntityActionProcessor().addAction(EntityActionProcessor.ActionType.VELOCITY);
+
 
                     user.getLagProcessor().setHitTime(System.currentTimeMillis());
 
@@ -45,8 +49,6 @@ public class VelocityProcessor {
                     velocityY = wrappedOutVelocityPacket.getY();
                     velocityZ = wrappedOutVelocityPacket.getZ();
 
-                    //user.getVelocityData().setVelocityX(user.getVelocityData().getVelocityX() * 0.6D);
-                    //user.getVelocityData().setVelocityZ(user.getVelocityData().getVelocityZ() * 0.6D);
 
                     horizontal = MathUtil.hypot(velocityX, velocityZ);
                     vertical = Math.pow(velocityY + 2.0, 2.0) * 5.0;
@@ -76,9 +78,24 @@ public class VelocityProcessor {
             }
 
             if (type.equalsIgnoreCase(Packet.Client.POSITION) || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK) || type.equalsIgnoreCase(Packet.Client.LOOK) || type.equalsIgnoreCase(Packet.Client.FLYING)) {
-                if (blocking) {
-                    velocityX *= 0.6F;
-                    velocityZ *= 0.6F;
+                if (user.getVelocityData().getVelocityTicks() < 5) {
+                    for (Map.Entry<Double, Short> doubleShortEntry : getLastVelocityVertical().entrySet()) {
+
+                        if (user.getMiscData().getTransactionIDVelocity() == doubleShortEntry.getValue()) {
+                            setVerticalTransaction((Double) ((Map.Entry) doubleShortEntry).getKey());
+                            getLastVelocityVertical().clear();
+                        }
+                    }
+                }
+
+                if (user.getVelocityData().getVelocityTicks() < 5) {
+                    for (Map.Entry<Double, Short> doubleShortEntry : getLastVelocityHorizontal().entrySet()) {
+
+                        if (user.getMiscData().getTransactionIDVelocity() == doubleShortEntry.getValue()) {
+                            setHorizontalTransaction((Double) ((Map.Entry) doubleShortEntry).getKey());
+                            getLastVelocityHorizontal().clear();
+                        }
+                    }
                 }
             }
 
@@ -87,9 +104,6 @@ public class VelocityProcessor {
                 if (useEntityPacket.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK || user.getMovementData().isLastSprint()) {
                     velocityX *= 0.6F;
                     velocityZ *= 0.6F;
-                }
-                if (useEntityPacket.getAction() == WrappedInUseEntityPacket.EnumEntityUseAction.ATTACK) {
-                    blocking = false;
                 }
             }
 

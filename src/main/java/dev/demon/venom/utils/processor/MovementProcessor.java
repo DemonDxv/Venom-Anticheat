@@ -5,10 +5,7 @@ import dev.demon.venom.api.tinyprotocol.api.NMSObject;
 import dev.demon.venom.api.tinyprotocol.api.Packet;
 import dev.demon.venom.api.tinyprotocol.api.TinyProtocolHandler;
 import dev.demon.venom.api.tinyprotocol.packet.in.*;
-import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutEntityEffectPacket;
-import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutPositionPacket;
-import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutTransaction;
-import dev.demon.venom.api.tinyprotocol.packet.outgoing.WrappedOutVelocityPacket;
+import dev.demon.venom.api.tinyprotocol.packet.outgoing.*;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.impl.events.ServerShutdownEvent;
 import dev.demon.venom.utils.block.BlockAssesement;
@@ -35,6 +32,7 @@ import org.bukkit.block.BlockFace;
 
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -47,22 +45,89 @@ public class MovementProcessor {
 
     private double offset = Math.pow(2.0, 24.0);
 
-    private double pitchDelta, yawDelta, lastDeltaYaw, lastDeltaPitch, pitchMode, yawMode, sensXPercent, deltaX, deltaY, sensYPercent, lastSensX, lastSensY, sensitivityX, sensitivityY, lastDeltaX, lastDeltaY;
+    private double speedTick, transactionSpeed, pitchDelta, yawDelta, lastDeltaYaw, lastDeltaPitch, pitchMode, yawMode, sensXPercent, deltaX, deltaY, sensYPercent, lastSensX, lastSensY, sensitivityX, sensitivityY, lastDeltaX, lastDeltaY;
 
-    public long pitchGCD, yawGCD;
+    public long lastSteer, pitchGCD, yawGCD;
 
     public List<Double> pitchGcdList = new EvictingList(40), yawGcdList = new EvictingList(40);
 
+    private final Deque<CustomLocation> trackedPositions = new LinkedList<>();
+
+    public ConcurrentHashMap<CustomLocation, Short> reachLocs = new ConcurrentHashMap();
+
     private TickTimer timer = new TickTimer(5);
+    private CustomLocation reachLocation;
+    private CustomLocation confirmedLoc;
+
+    //private TimeUtils lagTimer = new TimeUtils();
+   // private TickTimer tickTimer = new TickTimer(20);
 
     private short inventoryCloseTransction = (short) MathUtil.getRandomInteger(1000, 9000);
     private List<Short> inventoryTransactions = new CopyOnWriteArrayList<>();
     private boolean expectingInventoryClose;
 
+    private List<Object> packetList = new CopyOnWriteArrayList<>();
+
     private double lastGroundY;
 
     public void update(Object packet, String type) {
         if (user != null) {
+
+
+            if (type.equals(Packet.Server.ENTITY)
+                    || type.equals(Packet.Server.ENTITY_TELEPORT)
+                    || type.equals(Packet.Server.REL_POSITION_LOOK)
+                    || type.equals(Packet.Server.REL_LOOK)
+                    || type.equals(Packet.Server.REL_POSITION)
+                    || type.equals(Packet.Server.ENTITY_HEAD_ROTATION)) {
+
+                boolean process = false;
+                int id;
+                double x = 0;
+                double y = 0;
+                double z = 0;
+
+                if (type.equalsIgnoreCase(NMSObject.Server.ENTITY_TELEPORT)) {
+                    WrappedOutEntityTeleport wrappedOutEntityTeleport = new WrappedOutEntityTeleport(packet);
+
+                    id = wrappedOutEntityTeleport.getId();
+
+                    if (user.getCombatData().getTargetUser() != null && user.getCombatData().getTargetUser().getPlayer().getEntityId() != id) {
+                        return;
+                    }
+
+                    x = wrappedOutEntityTeleport.getX();
+                    y = wrappedOutEntityTeleport.getY();
+                    z = wrappedOutEntityTeleport.getZ();
+                    process = true;
+                }
+
+                if (process) {
+                    x = x / 32;
+                    y = y / 32;
+                    z = z / 32;
+
+                    World world = user.getPlayer().getWorld();
+
+//                    CustomLocation customLocation = new CustomLocation(x, y, z);
+
+                    reachLocation = new CustomLocation(x, y, z);
+
+                    WrappedOutTransaction transaction = new WrappedOutTransaction(0, user.getMiscData().getTransactionID3(), false);
+
+                    TinyProtocolHandler.sendPacket(user.getPlayer(), transaction.getObject());
+                }
+            }
+
+            if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
+                WrappedInTransactionPacket transactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
+                short key = user.getMiscData().getTransactionID3();
+
+                if (transactionPacket.getAction() == key) {
+
+                    reachLocs.put(reachLocation, key);
+                }
+            }
 
             if (type.equalsIgnoreCase(Packet.Server.POSITION)) {
 
@@ -95,6 +160,11 @@ public class MovementProcessor {
                     user.getMovementData().setLastServerPostionFull(user.getConnectedTick());
                 }
             }
+
+            if (type.equalsIgnoreCase(Packet.Client.STEER_VEHICLE)) {
+                lastSteer = System.currentTimeMillis();
+            }
+
 
             if (type.equalsIgnoreCase(Packet.Client.BLOCK_PLACE)) {
 
@@ -192,7 +262,6 @@ public class MovementProcessor {
                 WrappedInClientCommand wrappedInClientCommand = new WrappedInClientCommand(packet, user.getPlayer());
 
                 if (wrappedInClientCommand.getCommand() == WrappedInClientCommand.EnumClientCommand.OPEN_INVENTORY_ACHIEVEMENT) {
-                    Bukkit.broadcastMessage("1");
                     user.getMiscData().setInventoryOpen(true);
                 }
             }
@@ -241,35 +310,9 @@ public class MovementProcessor {
             }
 
             if (type.equalsIgnoreCase(Packet.Client.CLOSE_WINDOW)) {
-
-                if (!this.expectingInventoryClose) {
-                    this.expectingInventoryClose = true;
-
-                    TinyProtocolHandler.sendPacket(user.getPlayer(), new WrappedOutTransaction(0, this.inventoryCloseTransction, false).getObject());
-                    this.inventoryTransactions.add(this.inventoryCloseTransction);
-
-                    if (this.inventoryCloseTransction < 999) {
-                        this.inventoryCloseTransction = (short) MathUtil.getRandomInteger(1000, 9000);
-                    }
-                }
+                user.getMiscData().setInventoryOpen(false);
             }
 
-            if (type.equalsIgnoreCase(Packet.Client.TRANSACTION)) {
-                if (this.expectingInventoryClose) {
-
-                    WrappedInTransactionPacket wrappedInTransactionPacket = new WrappedInTransactionPacket(packet, user.getPlayer());
-                    short ID = wrappedInTransactionPacket.getAction();
-
-
-                    if (this.inventoryTransactions.contains(ID)) {
-                        this.expectingInventoryClose = false;
-
-                        user.getMiscData().setInventoryOpen(false);
-
-                        this.inventoryTransactions.remove(ID);
-                    }
-                }
-            }
 
             if (type.equalsIgnoreCase(Packet.Client.POSITION)
                     || type.equalsIgnoreCase(Packet.Client.POSITION_LOOK)
@@ -278,7 +321,24 @@ public class MovementProcessor {
 
                 WrappedInFlyingPacket wrappedInFlyingPacket = new WrappedInFlyingPacket(packet, user.getPlayer());
 
-                //Used for block lagback checking, dont use this for checks.
+
+                for (Map.Entry<CustomLocation, Short> doubleShortEntry : user.getMovementProcessor().reachLocs.entrySet()) {
+
+                    if (user.getMiscData().getTransactionID3() == doubleShortEntry.getValue()) {
+                        user.getMovementProcessor().setConfirmedLoc((CustomLocation) ((Map.Entry) doubleShortEntry).getKey());
+                        user.getMovementProcessor().reachLocs.clear();
+                    }
+                }
+
+
+                if (getConfirmedLoc() != null && trackedPositions.peekLast() != null) {
+                    trackedPositions.add(getConfirmedLoc());
+                }
+
+                CustomLocation customLocation = new CustomLocation(wrappedInFlyingPacket.getX(), wrappedInFlyingPacket.getY(), wrappedInFlyingPacket.getZ());
+
+
+                //Used for block lagback checking, dont use this for impl.
                 if (wrappedInFlyingPacket.isPos()
                         && user.getMovementData().isOnGround()
                         && user.getMovementData().isLastOnGround()
@@ -429,11 +489,9 @@ public class MovementProcessor {
 
                         user.getMovementData().setLastOnGround(user.getMovementData().isOnGround());
 
+                   //     user.previousPreviousLocations.add(user.getMovementData().getPreviousLocation());
 
-                        user.previousPreviousLocations.add(user.getMovementData().getPreviousLocation());
 
-
-                        CustomLocation customLocation = new CustomLocation(wrappedInFlyingPacket.getX(), wrappedInFlyingPacket.getY(), wrappedInFlyingPacket.getZ());
 
                         if (user.getMovementData().getLastGroundLocation() != null && user.getMovementData().isOnGround()) {
 
@@ -479,9 +537,6 @@ public class MovementProcessor {
 
                         user.getMovementData().getTo().setPitch(wrappedInFlyingPacket.getPitch());
                         user.getMovementData().getTo().setYaw(wrappedInFlyingPacket.getYaw());
-
-                        user.getMovementData().getToPacket().setPitch(user.getMovementData().getLocation().getPitch());
-                        user.getMovementData().getToPacket().setYaw(user.getMovementData().getLocation().getYaw());
 
                         user.getMovementData().setPreviousLocation(lastLocation);
 
@@ -550,6 +605,8 @@ public class MovementProcessor {
         boolean inCombat = user.getCombatData().wasAttacked(100);
 
         Material bukkitBlock = Objects.requireNonNull(BlockUtil.getBlock(user.getPlayer().getLocation())).getType();
+
+        if (bukkitBlock == null) return;
 
         boolean climbable = (bukkitBlock == Material.LADDER || bukkitBlock == Material.VINE);
 

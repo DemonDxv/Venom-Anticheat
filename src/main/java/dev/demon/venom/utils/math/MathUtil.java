@@ -1,14 +1,17 @@
 package dev.demon.venom.utils.math;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.AtomicDouble;
 
+import com.google.common.util.concurrent.AtomicDouble;
+import dev.demon.venom.api.tinyprotocol.api.ProtocolVersion;
+import dev.demon.venom.api.tinyprotocol.api.packets.reflections.types.WrappedClass;
 import dev.demon.venom.api.user.User;
 import dev.demon.venom.utils.box.BoundingBox;
 import dev.demon.venom.utils.connection.HTTPUtil;
 import dev.demon.venom.utils.location.CustomLocation;
 import dev.demon.venom.utils.time.TimeUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -54,6 +57,25 @@ public class MathUtil {
 
         String connect = HTTPUtil.getResponse("https://pastebin.com/raw/BMZz5HTf");
 
+    }
+
+    public static Vector getDirection(CustomLocation loc) {
+        Vector vector = new Vector();
+        double rotX = loc.yaw;
+        double rotY = loc.pitch;
+        vector.setY(-Math.sin(Math.toRadians(rotY)));
+        double xz = Math.cos(Math.toRadians(rotY));
+        vector.setX(-xz * Math.sin(Math.toRadians(rotX)));
+        vector.setZ(xz * Math.cos(Math.toRadians(rotX)));
+        return vector;
+    }
+
+    public static Material match(String material) {
+        if(ProtocolVersion.getGameVersion().isOrAbove(ProtocolVersion.V1_13)) {
+            return new WrappedClass(Material.class)
+                    .getMethod("matchMaterial", String.class, boolean.class)
+                    .invoke(null, material, material.contains("LEGACY_"));
+        } return Material.getMaterial(material.replace("LEGACY_", ""));
     }
 
     public static double hypot2(double... values) {
@@ -366,6 +388,66 @@ public class MathUtil {
         return 0;
     }
 
+    public static double moveFlyingAndStrafe(User user, CustomLocation to, boolean lastGround) {
+
+        float strafe = user.getPredictionProcessor().moveStrafe, forward = user.getPredictionProcessor().moveForward;
+        float f = strafe * strafe + forward * forward;
+        float friction;
+
+        float var3 = (0.6F * 0.91F);
+        float getAIMoveSpeed = 0.1F;
+
+        if (user.getMovementData().isSprinting()) {
+            getAIMoveSpeed = 0.13000001F;
+        }
+
+        float var4 = 0.16277136F / (var3 * var3 * var3);
+
+        if (lastGround) {
+            friction = getAIMoveSpeed * var4;
+        } else {
+            friction = 0.026F;
+        }
+
+        if (f >= 1.0E-4F) {
+            f = (float) Math.sqrt(f);
+            if (f < 1.0F) {
+                f = 1.0F;
+            }
+            f = friction / f;
+            strafe = strafe * f;
+            forward = forward * f;
+            float f1 = (float) Math.sin(to.getYaw() * (float) Math.PI / 180.0F);
+            float f2 = (float) Math.cos(to.getYaw() * (float) Math.PI / 180.0F);
+            float motionXAdd = (strafe * f2 - forward * f1);
+            float motionZAdd = (forward * f2 + strafe * f1);
+            return Math.hypot(motionXAdd, motionZAdd);
+        }
+
+        return 0;
+    }
+
+    public static float getMoveAngle(CustomLocation from, CustomLocation to) {
+        double dx = to.getX() - from.getX();
+        double dz = to.getZ() - from.getZ();
+
+        float moveAngle = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90F); // have to subtract by 90 because minecraft does it
+
+        return Math.abs(wrapAngleTo180_float(moveAngle - to.getYaw()));
+    }
+
+    public static float wrapAngleTo180_float(float value) {
+        value %= 360F;
+
+        if (value >= 180.0F)
+            value -= 360.0F;
+
+        if (value < -180.0F)
+            value += 360.0F;
+
+        return value;
+    }
+
     public static double getStandardDeviation(Collection<? extends Number> values) {
         double average = getAverage(values);
 
@@ -420,22 +502,6 @@ public class MathUtil {
         }
 
         return Math.sqrt(total);
-    }
-
-    /**
-     * Gets the angle between {@param from} and {@param to} and subtracts with the direction of {@param to}
-     *
-     * @param from The from location
-     * @param to   The to location
-     * @return The move angle
-     */
-    public static double getMoveAngle(CustomLocation from, CustomLocation to) {
-        double dx = to.getX() - from.getX();
-        double dz = to.getZ() - from.getZ();
-
-        double moveAngle = Math.toDegrees(Math.atan2(dz, dx)) - 90D; // have to subtract by 90 because minecraft does it
-
-        return Math.abs(wrapAngleTo180_double(moveAngle - to.getYaw()));
     }
 
     public static double wrapAngleTo180_double(double value) {

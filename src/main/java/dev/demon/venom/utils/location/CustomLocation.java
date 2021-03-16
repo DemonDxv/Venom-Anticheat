@@ -13,10 +13,14 @@ import org.bukkit.util.Vector;
 @Getter @Setter
 public class CustomLocation {
     public double x;
-    private double y;
+    public double y;
     public double z;
+    public double maxX;
+    public double maxZ;
+    public double minX;
+    public double minZ;
 
-    private float yaw, pitch;
+    public float yaw, pitch;
     private long timeStamp;
 
     @Setter(AccessLevel.NONE)
@@ -33,16 +37,24 @@ public class CustomLocation {
     }
 
     public CustomLocation(double x, double y, double z) {
+        this.minX = x - 0.3;
+        this.maxX = x + 0.3;
         this.x = x;
         this.y = y;
+        this.minZ = z - 0.3;
+        this.maxZ = z + 0.3;
         this.z = z;
 
         timeStamp = System.currentTimeMillis();
     }
 
     public CustomLocation(double x, double y, double z, float yaw, float pitch) {
+        this.minX = x - 0.3;
+        this.maxX = x + 0.3;
         this.x = x;
         this.y = y;
+        this.minZ = z - 0.3;
+        this.maxZ = z + 0.3;
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
@@ -74,8 +86,12 @@ public class CustomLocation {
     }
 
     public CustomLocation(double x, double y, double z, float yaw, float pitch, long timeStamp) {
+        this.minX = x - 0.3;
+        this.maxX = x + 0.3;
         this.x = x;
         this.y = y;
+        this.minZ = z - 0.3;
+        this.maxZ = z + 0.3;
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
@@ -90,6 +106,13 @@ public class CustomLocation {
         this.pitch = loc.getPitch();
 
         this.timeStamp = System.currentTimeMillis();
+    }
+
+    public double getDistanceSquared(CustomLocation location, CustomLocation lastLocation) {
+        double dx = Math.min(Math.abs(location.x - minX), Math.abs(lastLocation.x - maxX));
+        double dz = Math.min(Math.abs(location.z - minZ), Math.abs(lastLocation.z - maxZ));
+
+        return Math.sqrt(Math.pow(dx, 2.0) + Math.pow(dz, 2.0));
     }
 
     public CustomLocation clone() {
